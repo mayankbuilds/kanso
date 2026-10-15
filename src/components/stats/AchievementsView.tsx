@@ -27,6 +27,7 @@ import {
   CodingSyncResult,
 } from "@/types";
 import { api } from "@/lib/api";
+import { STORAGE_KEYS, getLocal, setLocal } from "@/lib/storage";
 
 interface Props {
   stats: UserStats | null;
@@ -114,28 +115,28 @@ export default function AchievementsView({
     let savedLc = "";
     let savedCf = "";
     if (typeof window !== "undefined") {
-      try {
-        const savedLcRes = localStorage.getItem("streakflow_lc_result");
-        if (savedLcRes) setLcResult(JSON.parse(savedLcRes));
-      } catch {}
-      try {
-        const savedCfRes = localStorage.getItem("streakflow_cf_result");
-        if (savedCfRes) setCfResult(JSON.parse(savedCfRes));
-      } catch {}
+      const savedLcRes = getLocal<CodingSyncResult | null>(STORAGE_KEYS.LC_RESULT, null);
+      if (savedLcRes) setLcResult(savedLcRes);
 
-      const totalMins = parseInt(
-        localStorage.getItem("streakflow_focus_total_completed_mins") || "0",
-        10,
-      );
-      setLocalTotalCompleted(totalMins);
+      const savedCfRes = getLocal<CodingSyncResult | null>(STORAGE_KEYS.CF_RESULT, null);
+      if (savedCfRes) setCfResult(savedCfRes);
 
-      savedLc = localStorage.getItem("streakflow_lc_handle") || "";
-      savedCf = localStorage.getItem("streakflow_cf_handle") || "";
+      const rawTotal = getLocal<string | number>(STORAGE_KEYS.FOCUS_TOTAL_COMPLETED_MINS, "0");
+      const totalMins = typeof rawTotal === "number" ? rawTotal : parseInt(rawTotal || "0", 10);
+      setLocalTotalCompleted(isNaN(totalMins) ? 0 : totalMins);
+
+      savedLc = getLocal<string>(STORAGE_KEYS.LC_HANDLE, "");
+      savedCf = getLocal<string>(STORAGE_KEYS.CF_HANDLE, "");
       if (savedLc) setLcUsername(savedLc);
       if (savedCf) setCfHandle(savedCf);
-      const todayKey = `streakflow_focus_mins_${new Date().toISOString().slice(0, 10)}`;
-      const val = parseInt(localStorage.getItem(todayKey) || "0", 10);
-      setCachedTodayMins(val);
+
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const rawToday =
+        localStorage.getItem(`${STORAGE_KEYS.FOCUS_TODAY_PREFIX}${todayStr}`) ||
+        localStorage.getItem(`streakflow_focus_mins_${todayStr}`) ||
+        "0";
+      const val = parseInt(rawToday, 10);
+      setCachedTodayMins(isNaN(val) ? 0 : val);
     }
 
     loadStatsData().then(() => {
@@ -147,7 +148,7 @@ export default function AchievementsView({
           .then((res) => {
             setLcResult(res);
             if (typeof window !== "undefined") {
-              localStorage.setItem("streakflow_lc_result", JSON.stringify(res));
+              setLocal(STORAGE_KEYS.LC_RESULT, res);
             }
             loadStatsData();
           })
@@ -163,7 +164,7 @@ export default function AchievementsView({
           .then((res) => {
             setCfResult(res);
             if (typeof window !== "undefined") {
-              localStorage.setItem("streakflow_cf_result", JSON.stringify(res));
+              setLocal(STORAGE_KEYS.CF_RESULT, res);
             }
             loadStatsData();
           })
@@ -177,14 +178,17 @@ export default function AchievementsView({
     const handleFocusCompleted = () => {
       loadStatsData();
       if (typeof window !== "undefined") {
-        const todayKey = `streakflow_focus_mins_${new Date().toISOString().slice(0, 10)}`;
-        const val = parseInt(localStorage.getItem(todayKey) || "0", 10);
-        setCachedTodayMins(val);
-        const totalMins = parseInt(
-          localStorage.getItem("streakflow_focus_total_completed_mins") || "0",
-          10,
-        );
-        setLocalTotalCompleted(totalMins);
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const rawToday =
+          localStorage.getItem(`${STORAGE_KEYS.FOCUS_TODAY_PREFIX}${todayStr}`) ||
+          localStorage.getItem(`streakflow_focus_mins_${todayStr}`) ||
+          "0";
+        const val = parseInt(rawToday, 10);
+        setCachedTodayMins(isNaN(val) ? 0 : val);
+
+        const rawTotal = getLocal<string | number>(STORAGE_KEYS.FOCUS_TOTAL_COMPLETED_MINS, "0");
+        const totalMins = typeof rawTotal === "number" ? rawTotal : parseInt(rawTotal || "0", 10);
+        setLocalTotalCompleted(isNaN(totalMins) ? 0 : totalMins);
       }
     };
 
@@ -206,13 +210,13 @@ export default function AchievementsView({
         custom.detail?.lcHandle !== undefined
           ? custom.detail.lcHandle
           : typeof window !== "undefined"
-            ? localStorage.getItem("streakflow_lc_handle") || ""
+            ? getLocal<string>(STORAGE_KEYS.LC_HANDLE, "")
             : "";
       const nextCf =
         custom.detail?.cfHandle !== undefined
           ? custom.detail.cfHandle
           : typeof window !== "undefined"
-            ? localStorage.getItem("streakflow_cf_handle") || ""
+            ? getLocal<string>(STORAGE_KEYS.CF_HANDLE, "")
             : "";
 
       if (nextLc !== undefined) setLcUsername(nextLc);
@@ -270,8 +274,8 @@ export default function AchievementsView({
       const res = await api.syncLeetCode(lcUsername.trim());
       setLcResult(res);
       if (typeof window !== "undefined") {
-        localStorage.setItem("streakflow_lc_handle", lcUsername.trim());
-        localStorage.setItem("streakflow_lc_result", JSON.stringify(res));
+        setLocal(STORAGE_KEYS.LC_HANDLE, lcUsername.trim());
+        setLocal(STORAGE_KEYS.LC_RESULT, res);
         window.dispatchEvent(
           new CustomEvent("streakflow-handles-updated", {
             detail: { lcHandle: lcUsername.trim() },
@@ -299,8 +303,8 @@ export default function AchievementsView({
       const res = await api.syncCodeforces(cfHandle.trim());
       setCfResult(res);
       if (typeof window !== "undefined") {
-        localStorage.setItem("streakflow_cf_handle", cfHandle.trim());
-        localStorage.setItem("streakflow_cf_result", JSON.stringify(res));
+        setLocal(STORAGE_KEYS.CF_HANDLE, cfHandle.trim());
+        setLocal(STORAGE_KEYS.CF_RESULT, res);
         window.dispatchEvent(
           new CustomEvent("streakflow-handles-updated", {
             detail: { cfHandle: cfHandle.trim() },
@@ -676,44 +680,43 @@ export default function AchievementsView({
 
   return (
     <div className="space-y-6 font-mono">
-      {/* TOP BANNER: RPG PLAYER STATS & LEVEL */}
-      <div className="bg-gradient-to-br from-purple-950/40 via-zinc-900/60 to-zinc-950 border border-purple-900/50 rounded-2xl p-6 relative overflow-hidden">
-        <div className="absolute right-0 top-0 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
-
+      {/* TOP BANNER: MILESTONES & PROGRESS */}
+      <div className="bg-surface-elevated border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-6 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
           <div>
-            <span className="text-xs text-purple-400 uppercase tracking-widest flex items-center gap-1.5 font-bold">
-              <Zap className="w-3.5 h-3.5 fill-purple-400" /> Player Profile &
-              Hierarchy
+            <span className="text-xs text-accent uppercase tracking-wider flex items-center gap-1.5 font-semibold">
+              <Award className="w-3.5 h-3.5" /> Milestones & Progress
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-white mt-1">
-              Level {level} Architect
+            <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">
+              Level {level}
             </h2>
-            <p className="text-xs text-zinc-400 mt-1">
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
               {300 - currentLevelProgress} XP remaining to achieve Level{" "}
               {level + 1}
             </p>
           </div>
 
           <div className="text-left sm:text-right">
-            <span className="text-3xl sm:text-4xl font-black text-purple-300">
+            <span className="text-3xl sm:text-4xl font-bold text-accent">
               {xp}
             </span>
             <span className="text-xs text-zinc-500 block">
-              Total Lifetime XP
+              Lifetime XP
             </span>
           </div>
         </div>
 
         {/* Progress Bar */}
         <div className="mt-6 relative z-10">
-          <div className="flex justify-between text-[11px] text-zinc-400 mb-1.5">
-            <span>Progress to Next Rank</span>
-            <span>{Math.round((currentLevelProgress / 300) * 100)}%</span>
+          <div className="flex justify-between text-[11px] text-zinc-500 dark:text-zinc-400 mb-1.5">
+            <span>Progress to Next Level</span>
+            <span className="font-semibold text-zinc-700 dark:text-zinc-300">
+              {Math.round((currentLevelProgress / 300) * 100)}%
+            </span>
           </div>
-          <div className="h-3 w-full bg-zinc-950 rounded-full border border-zinc-800 overflow-hidden">
+          <div className="h-2.5 w-full bg-zinc-100 dark:bg-zinc-800/80 rounded-full border border-zinc-200 dark:border-zinc-800 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-purple-600 via-cyan-400 to-emerald-400 transition-all duration-700"
+              className="h-full bg-accent rounded-full transition-all duration-500"
               style={{ width: `${(currentLevelProgress / 300) * 100}%` }}
             />
           </div>
@@ -722,28 +725,28 @@ export default function AchievementsView({
 
       {/* QUICK METRIC CARDS */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-2xl">
-          <span className="text-[10px] uppercase text-zinc-500 block font-bold">
+        <div className="bg-surface-elevated border border-zinc-200 dark:border-zinc-800/80 p-4 rounded-2xl">
+          <span className="text-[10px] uppercase text-zinc-500 block font-semibold tracking-wider">
             Total Solved
           </span>
-          <span className="text-2xl font-black text-emerald-400 mt-1 block">
+          <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mt-1 block">
             {totalSolved}
           </span>
-          <span className="text-[10px] text-zinc-400">DSA Problems</span>
+          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">DSA Problems</span>
         </div>
 
-        <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-2xl">
-          <span className="text-[10px] uppercase text-zinc-500 block font-bold">
+        <div className="bg-surface-elevated border border-zinc-200 dark:border-zinc-800/80 p-4 rounded-2xl">
+          <span className="text-[10px] uppercase text-zinc-500 block font-semibold tracking-wider">
             Focus Time
           </span>
           <div className="flex items-baseline gap-1 mt-1">
             <span
               suppressHydrationWarning
-              className="text-2xl font-black text-cyan-400"
+              className="text-2xl font-bold text-zinc-900 dark:text-zinc-100"
             >
               {displayedTotalMinutes}
             </span>
-            <span className="text-xs text-cyan-300/80 font-bold">mins</span>
+            <span className="text-xs text-zinc-500 font-semibold">mins</span>
             {displayedTotalMinutes >= 60 && (
               <span
                 suppressHydrationWarning
@@ -755,32 +758,32 @@ export default function AchievementsView({
           </div>
           <span
             suppressHydrationWarning
-            className="text-[10px] text-zinc-400 block mt-0.5"
+            className="text-[10px] text-zinc-500 dark:text-zinc-400 block mt-0.5"
           >
             Today: {displayedTodayMinutes}m • {focusStats?.total_sessions ?? 0}{" "}
             Pomodoros
           </span>
         </div>
 
-        <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-2xl">
-          <span className="text-[10px] uppercase text-zinc-500 block font-bold">
+        <div className="bg-surface-elevated border border-zinc-200 dark:border-zinc-800/80 p-4 rounded-2xl">
+          <span className="text-[10px] uppercase text-zinc-500 block font-semibold tracking-wider">
             Active Streak
           </span>
-          <span className="text-2xl font-black text-orange-400 mt-1 block flex items-center gap-1">
-            <Flame className="w-5 h-5 fill-orange-400" />
+          <span className="text-2xl font-bold text-accent mt-1 block flex items-center gap-1.5">
+            <Flame className="w-5 h-5 text-accent" />
             {streak}d
           </span>
-          <span className="text-[10px] text-zinc-400">Consistency Ledger</span>
+          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">Consistency Ledger</span>
         </div>
 
-        <div className="bg-zinc-900/40 border border-zinc-800/80 p-4 rounded-2xl">
-          <span className="text-[10px] uppercase text-zinc-500 block font-bold">
+        <div className="bg-surface-elevated border border-zinc-200 dark:border-zinc-800/80 p-4 rounded-2xl">
+          <span className="text-[10px] uppercase text-zinc-500 block font-semibold tracking-wider">
             Longest Streak
           </span>
-          <span className="text-2xl font-black text-purple-400 mt-1 block">
+          <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mt-1 block">
             {stats?.longest_streak_days ?? 0}d
           </span>
-          <span className="text-[10px] text-zinc-400">Personal Best</span>
+          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">Personal Best</span>
         </div>
       </div>
 
@@ -809,8 +812,8 @@ export default function AchievementsView({
             className="p-4 bg-zinc-950/70 border border-zinc-800 rounded-xl space-y-3"
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 font-bold text-xs text-amber-400">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+              <div className="flex items-center gap-2 font-bold text-xs text-amber-500 dark:text-amber-400">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 dark:bg-amber-400" />
                 LeetCode Profile
               </div>
               {lcResult && (
@@ -879,8 +882,8 @@ export default function AchievementsView({
             className="p-4 bg-zinc-950/70 border border-zinc-800 rounded-xl space-y-3"
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 font-bold text-xs text-blue-400">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+              <div className="flex items-center gap-2 font-bold text-xs text-blue-500 dark:text-blue-400">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-500 dark:bg-blue-400" />
                 Codeforces Handle
               </div>
               {cfResult && (
@@ -982,9 +985,9 @@ export default function AchievementsView({
 
                   <div className="w-full bg-zinc-900/60 rounded-t-lg h-32 flex items-end p-1">
                     <div
-                      className={`w-full rounded-md transition-all duration-700 ${
+                      className={`w-full rounded-md transition-all duration-500 ${
                         day.focus_minutes > 0
-                          ? "bg-gradient-to-t from-cyan-600 to-emerald-400 shadow-[0_0_12px_rgba(6,182,212,0.3)]"
+                          ? "bg-accent"
                           : "bg-zinc-800"
                       }`}
                       style={{ height: `${heightPercent}%` }}
@@ -1048,8 +1051,8 @@ export default function AchievementsView({
                 {/* LeetCode Card */}
                 <div className="p-3 bg-zinc-950 border border-zinc-800/90 rounded-xl space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-amber-400 font-bold flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,0.5)]" />{" "}
+                    <span className="text-amber-500 dark:text-amber-400 font-bold flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400" />{" "}
                       LeetCode
                     </span>
                     <span className="text-zinc-200 font-mono font-black text-sm">
@@ -1071,8 +1074,8 @@ export default function AchievementsView({
                 {/* Codeforces Card */}
                 <div className="p-3 bg-zinc-950 border border-zinc-800/90 rounded-xl space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-blue-400 font-bold flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_6px_rgba(59,130,246,0.5)]" />{" "}
+                    <span className="text-blue-500 dark:text-blue-400 font-bold flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400" />{" "}
                       Codeforces
                     </span>
                     <span className="text-zinc-200 font-mono font-black text-sm">
@@ -1152,8 +1155,8 @@ export default function AchievementsView({
                 {/* LeetCode Profile Card */}
                 <div className="p-3 bg-zinc-950 border border-zinc-800/90 rounded-xl space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-amber-400 font-bold flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,0.5)]" />{" "}
+                    <span className="text-amber-500 dark:text-amber-400 font-bold flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400" />{" "}
                       LeetCode
                     </span>
                     <span className="text-zinc-200 font-mono font-black text-sm">
@@ -1178,8 +1181,8 @@ export default function AchievementsView({
                 {/* Codeforces Profile Card */}
                 <div className="p-3 bg-zinc-950 border border-zinc-800/90 rounded-xl space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-blue-400 font-bold flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_6px_rgba(59,130,246,0.5)]" />{" "}
+                    <span className="text-blue-500 dark:text-blue-400 font-bold flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400" />{" "}
                       Codeforces
                     </span>
                     <span className="text-zinc-200 font-mono font-black text-sm">
@@ -1300,7 +1303,7 @@ export default function AchievementsView({
                 <div
                   className={`p-2.5 rounded-xl border shrink-0 ${
                     b.unlocked
-                      ? "bg-emerald-950/70 border-emerald-700 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.25)]"
+                      ? "bg-emerald-950/70 border-emerald-700 text-emerald-400 shadow-xs"
                       : "bg-zinc-900 border-zinc-800 text-zinc-600"
                   }`}
                 >
@@ -1341,7 +1344,7 @@ export default function AchievementsView({
       {/* BADGE CELEBRATION MODAL */}
       {celebratingBadge && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in">
-          <div className="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-emerald-500/80 w-full max-w-md rounded-3xl p-6 text-center space-y-4 shadow-[0_0_60px_rgba(16,185,129,0.3)] relative overflow-hidden">
+          <div className="bg-zinc-950 border border-zinc-800 w-full max-w-md rounded-3xl p-6 text-center space-y-4 shadow-2xl relative overflow-hidden">
             <button
               onClick={() => setCelebratingBadge(null)}
               className="absolute top-4 right-4 text-zinc-400 hover:text-white p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 transition cursor-pointer"
@@ -1349,9 +1352,9 @@ export default function AchievementsView({
               <X className="w-4 h-4" />
             </button>
 
-            {/* Glowing Trophy / Badge Emblem */}
-            <div className="mx-auto w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-cyan-400 p-0.5 shadow-[0_0_30px_rgba(16,185,129,0.5)] animate-bounce">
-              <div className="w-full h-full bg-zinc-950 rounded-[22px] flex items-center justify-center text-emerald-400">
+            {/* Emblem */}
+            <div className="mx-auto w-20 h-20 rounded-3xl bg-accent p-0.5 shadow-md">
+              <div className="w-full h-full bg-zinc-950 rounded-[22px] flex items-center justify-center text-accent">
                 {(() => {
                   const Icon = celebratingBadge.icon;
                   return <Icon className="w-10 h-10" />;
@@ -1360,10 +1363,10 @@ export default function AchievementsView({
             </div>
 
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-400 bg-emerald-950/60 border border-emerald-800 px-3 py-1 rounded-full inline-block mb-1.5">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-accent bg-accent-subtle border border-accent px-3 py-1 rounded-full inline-block mb-1.5">
                 {celebratingBadge.tier} Tier Milestone
               </span>
-              <h3 className="text-xl font-black text-white">
+              <h3 className="text-xl font-bold text-white">
                 {celebratingBadge.title}
               </h3>
               <p className="text-xs text-zinc-300 mt-2">
@@ -1384,9 +1387,9 @@ export default function AchievementsView({
                     origin: { y: 0.5 },
                   });
                 }}
-                className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
+                className="flex-1 py-2.5 px-4 rounded-xl bg-accent hover:opacity-90 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
               >
-                <Sparkles className="w-4 h-4" /> Celebrate Again!
+                <Sparkles className="w-4 h-4" /> Celebrate Again
               </button>
               <button
                 onClick={() => setCelebratingBadge(null)}
@@ -1510,7 +1513,7 @@ export default function AchievementsView({
                         <div
                           className={`p-2.5 rounded-xl border shrink-0 ${
                             b.unlocked
-                              ? "bg-emerald-950 border-emerald-700 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.25)]"
+                              ? "bg-emerald-950 border-emerald-700 text-emerald-400 shadow-xs"
                               : "bg-zinc-900 border-zinc-800 text-zinc-600"
                           }`}
                         >

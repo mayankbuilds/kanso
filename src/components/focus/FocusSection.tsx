@@ -21,16 +21,14 @@ export default function FocusSection({
   const completedCount = tasks.filter((t) => t.is_completed).length;
 
   return (
-    <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-4 sm:p-5">
+    <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-xs">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-zinc-300 flex items-center gap-2">
-          <Target className="w-4 h-4 text-orange-400" /> Rule of 3 •
-          Non-Negotiables
-          <Target className="w-4 h-4 text-orange-400" /> Rule of 3 • Daily Focus
+        <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-zinc-800 dark:text-zinc-300 flex items-center gap-2">
+          <Target className="w-4 h-4 text-accent" /> Rule of 3 • Daily Focus
         </h2>
         {completedCount === 3 ? (
-          <span className="flex items-center gap-1 text-[11px] font-mono bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded-md">
-            <Trophy className="w-3 h-3" /> Day Complete!
+          <span className="flex items-center gap-1 text-[11px] font-mono bg-accent-subtle text-accent border border-accent px-2.5 py-0.5 rounded-md font-semibold">
+            <Trophy className="w-3 h-3" /> Day Complete
           </span>
         ) : (
           <span className="text-[10px] font-mono text-zinc-500">

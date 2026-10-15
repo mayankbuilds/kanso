@@ -1,12 +1,13 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
+  "name": "kanso",
+  "version": "3.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --test tests/*.test.ts"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",

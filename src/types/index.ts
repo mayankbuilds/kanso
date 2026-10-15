@@ -107,3 +107,22 @@ export interface CodingSyncResult {
   synced_problems_count: number;
   message: string;
 }
+
+export interface BacklogTask {
+  id: string;
+  title: string;
+  category: string;
+  priority: "High" | "Medium" | "Low";
+  dueDate?: string;
+  isCompleted: boolean;
+  createdAt: string;
+}
+
+export interface QuickNote {
+  id: string;
+  title: string;
+  content: string;
+  tags: string[];
+  isPinned: boolean;
+  updatedAt: string;
+}

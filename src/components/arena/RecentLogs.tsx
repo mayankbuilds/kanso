@@ -348,7 +348,7 @@ export default function RecentLogs({
                   Submissions Ledger
                 </h3>
                 <p className="text-[11px] text-zinc-400 mt-0.5">
-                  All solved coding problems tracked in Go with Flow (
+                  All solved coding problems tracked in Kanso (
                   {filteredAllLogs.length} shown)
                 </p>
               </div>

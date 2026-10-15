@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  isCodeforcesSuccessResponse,
+  processCodeforcesSubmissions,
+} from "@/lib/codeforces";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -37,15 +41,14 @@ export async function GET(request: NextRequest) {
     const rating = user.rating || 0;
     const rank = user.rank ? `${user.rank} (${rating})` : null;
 
-    // 2. Fetch user status / submissions
-    const statusRes = await fetch(
-      `https://codeforces.com/api/user.status?handle=${encodeURIComponent(handle)}&from=1&count=50`,
-      { next: { revalidate: 60 } },
-    );
+    // 2. Fetch user status / submissions with pagination & deduplication
+    const BATCH_SIZE = 2500;
+    const MAX_PAGES = 4; // Up to 10,000 submissions
+    let from = 1;
+    let hasMore = true;
+    let pageCount = 0;
 
-    let easyCount = 0;
-    let medCount = 0;
-    let hardCount = 0;
+    const counts = { easy: 0, medium: 0, hard: 0 };
     const solvedSet = new Set<string>();
     const recentSubs: Array<{
       title: string;
@@ -54,55 +57,57 @@ export async function GET(request: NextRequest) {
       url: string;
     }> = [];
 
-    if (statusRes.ok) {
+    while (hasMore && pageCount < MAX_PAGES) {
+      pageCount++;
+      if (pageCount > 1) {
+        // Courteous pacing between pages to respect Codeforces rate limits
+        await new Promise((r) => setTimeout(r, 250));
+      }
+
+      const statusRes = await fetch(
+        `https://codeforces.com/api/user.status?handle=${encodeURIComponent(handle)}&from=${from}&count=${BATCH_SIZE}`,
+        { next: { revalidate: 60 } },
+      );
+
+      if (!statusRes.ok) {
+        return NextResponse.json(
+          { error: `Codeforces submissions endpoint returned status ${statusRes.status}` },
+          { status: 502 },
+        );
+      }
+
       const statusData = await statusRes.json();
-      if (statusData.status === "OK" && Array.isArray(statusData.result)) {
-        for (const sub of statusData.result) {
-          if (sub.verdict === "OK" && sub.problem) {
-            const p = sub.problem;
-            const key = `${p.contestId || ""}-${p.index || ""}-${p.name || ""}`;
-            if (!solvedSet.has(key)) {
-              solvedSet.add(key);
+      if (!isCodeforcesSuccessResponse(statusData)) {
+        return NextResponse.json(
+          { error: (statusData && typeof statusData === "object" && "comment" in statusData && typeof statusData.comment === "string") ? statusData.comment : "Codeforces submissions query failed" },
+          { status: 502 },
+        );
+      }
 
-              const probRating = p.rating || 1200;
-              let diff = "Medium";
-              if (probRating < 1200) {
-                diff = "Easy";
-                easyCount++;
-              } else if (probRating <= 1800) {
-                diff = "Medium";
-                medCount++;
-              } else {
-                diff = "Hard";
-                hardCount++;
-              }
+      const submissions = statusData.result;
+      if (submissions.length === 0) {
+        hasMore = false;
+        break;
+      }
 
-              if (recentSubs.length < 15) {
-                const contestId = p.contestId;
-                const index = p.index;
-                const problemUrl =
-                  contestId && index
-                    ? `https://codeforces.com/problemset/problem/${contestId}/${index}`
-                    : `https://codeforces.com/problemset`;
+      processCodeforcesSubmissions(submissions, solvedSet, recentSubs, counts);
 
-                recentSubs.push({
-                  title: p.name,
-                  difficulty: diff,
-                  timestamp: sub.creationTimeSeconds || 0,
-                  url: problemUrl,
-                });
-              }
-            }
-          }
-        }
+      if (submissions.length < BATCH_SIZE) {
+        hasMore = false;
+      } else {
+        from += BATCH_SIZE;
       }
     }
 
     const totalSolved = solvedSet.size;
+    const easyCount = counts.easy;
+    const medCount = counts.medium;
+    const hardCount = counts.hard;
 
     return NextResponse.json({
       platform: "Codeforces",
       handle,
+      rating,
       total_solved: totalSolved,
       easy_solved: easyCount,
       medium_solved: medCount,

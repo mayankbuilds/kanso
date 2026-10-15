@@ -16,6 +16,14 @@ import {
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import CalendarPicker from "@/components/ui/CalendarPicker";
+import {
+  STORAGE_KEYS,
+  getLocal,
+  setLocal,
+  recordUserActivity,
+  getUserStats,
+  setUserStats,
+} from "@/lib/storage";
 
 export interface BacklogTask {
   id: string;
@@ -67,35 +75,47 @@ export default function TasksAndNotes({
   const [showAddNote, setShowAddNote] = useState(false);
   const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
 
-  // Load from localStorage on mount
+  // Load from localStorage and listen for updates (e.g. Google Drive restore)
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    const loadTasksAndNotes = () => {
+      if (typeof window === "undefined") return;
       try {
-        const savedTasks = localStorage.getItem("streakflow_tasks");
-        if (savedTasks) setTasks(JSON.parse(savedTasks));
+        const savedTasks = getLocal<BacklogTask[]>(STORAGE_KEYS.TASKS, []);
+        setTasks(Array.isArray(savedTasks) ? savedTasks : []);
 
-        const savedNotes = localStorage.getItem("streakflow_notes");
-        if (savedNotes) setNotes(JSON.parse(savedNotes));
+        const savedNotes = getLocal<QuickNote[]>(STORAGE_KEYS.NOTES, []);
+        setNotes(Array.isArray(savedNotes) ? savedNotes : []);
       } catch (err) {
         console.error("Failed to load tasks and notes from localStorage:", err);
       }
-    }
+    };
+
+    loadTasksAndNotes();
+
+    const handleStorageUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<{ key?: string }>;
+      const key = customEvent.detail?.key;
+      if (!key || key === "all" || key === STORAGE_KEYS.TASKS || key === STORAGE_KEYS.NOTES) {
+        loadTasksAndNotes();
+      }
+    };
+
+    window.addEventListener("kanso-storage-updated", handleStorageUpdate);
+    return () => {
+      window.removeEventListener("kanso-storage-updated", handleStorageUpdate);
+    };
   }, []);
 
   // Save tasks to localStorage
   const saveTasks = (updated: BacklogTask[]) => {
     setTasks(updated);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("streakflow_tasks", JSON.stringify(updated));
-    }
+    setLocal(STORAGE_KEYS.TASKS, updated);
   };
 
   // Save notes to localStorage
   const saveNotes = (updated: QuickNote[]) => {
     setNotes(updated);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("streakflow_notes", JSON.stringify(updated));
-    }
+    setLocal(STORAGE_KEYS.NOTES, updated);
   };
 
   // Task Actions
@@ -126,22 +146,17 @@ export default function TasksAndNotes({
 
     if (next) {
       confetti({ particleCount: 30, spread: 45, origin: { y: 0.7 } });
-    }
-
-    // Adjust XP symmetrically to prevent exploit farming
-    if (typeof window !== "undefined") {
-      try {
-        const rawStats = localStorage.getItem("streakflow_user_stats");
-        if (rawStats) {
-          const stats = JSON.parse(rawStats);
-          const deltaXP = next ? 15 : -15;
-          stats.xp = Math.max(0, (stats.xp || 0) + deltaXP);
-          stats.level = Math.floor(stats.xp / 300) + 1;
-          localStorage.setItem("streakflow_user_stats", JSON.stringify(stats));
-          window.dispatchEvent(new Event("streakflow-stats-updated"));
-        }
-      } catch (err) {
-        console.error("Failed to update stats XP:", err);
+      recordUserActivity(15);
+    } else {
+      const stats = getUserStats();
+      const newXP = Math.max(0, stats.xp - 15);
+      setUserStats({
+        ...stats,
+        xp: newXP,
+        level: Math.floor(newXP / 300) + 1,
+      });
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("streakflow-stats-updated"));
       }
     }
 

@@ -7,6 +7,7 @@ import {
   ChevronRight,
   X,
 } from "lucide-react";
+import { getLocalDateString } from "@/lib/dateUtils";
 
 interface CalendarPickerProps {
   value: string; // "YYYY-MM-DD" or ""
@@ -68,10 +69,10 @@ export default function CalendarPicker({
 
   // Sync view when selectedDate changes from outside
   const [prevDateStr, setPrevDateStr] = useState(
-    selectedDate ? selectedDate.toISOString().slice(0, 10) : "",
+    selectedDate ? getLocalDateString(selectedDate) : "",
   );
   const currentDateStr = selectedDate
-    ? selectedDate.toISOString().slice(0, 10)
+    ? getLocalDateString(selectedDate)
     : "";
   if (currentDateStr !== prevDateStr) {
     setPrevDateStr(currentDateStr);

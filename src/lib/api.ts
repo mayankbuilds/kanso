@@ -9,26 +9,16 @@ import {
   StudentRoutine,
   UserStats,
 } from "@/types";
+import {
+  STORAGE_KEYS,
+  getLocal,
+  setLocal,
+  recordUserActivity,
+  getStreakStatus,
+} from "@/lib/storage";
+import { getLocalDateString } from "@/lib/dateUtils";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
-
-// Helper for local offline storage fallback
-function getLocal<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function setLocal<T>(key: string, val: T): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(key, JSON.stringify(val));
-  } catch {}
-}
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   if (!API_BASE) {
@@ -71,11 +61,11 @@ export const api = {
   getHeatmap: async (days: number = 112): Promise<HeatmapDay[]> => {
     try {
       const data = await request<HeatmapDay[]>(`/coding/heatmap?days=${days}`);
-      setLocal("streakflow_cached_heatmap", data);
+      setLocal(STORAGE_KEYS.CACHED_HEATMAP, data);
       return data;
     } catch {
       // Local fallback
-      const logs = getLocal<CodingLog[]>("streakflow_logs", []);
+      const logs = getLocal<CodingLog[]>(STORAGE_KEYS.LOGS, []);
       const countMap: Record<string, number> = {};
       logs.forEach((l) => {
         const d = l.solved_at.slice(0, 10);
@@ -87,7 +77,7 @@ export const api = {
       for (let i = days - 1; i >= 0; i--) {
         const d = new Date(today);
         d.setDate(d.getDate() - i);
-        const dStr = d.toISOString().slice(0, 10);
+        const dStr = getLocalDateString(d);
         result.push({ date: dStr, count: countMap[dStr] || 0 });
       }
       return result;
@@ -102,10 +92,10 @@ export const api = {
       const data = await request<CodingLog[]>(
         `/coding/logs?limit=${limit}&offset=${offset}`,
       );
-      setLocal("streakflow_logs", data);
+      setLocal(STORAGE_KEYS.LOGS, data);
       return data;
     } catch {
-      const logs = getLocal<CodingLog[]>("streakflow_logs", []);
+      const logs = getLocal<CodingLog[]>(STORAGE_KEYS.LOGS, []);
       return logs.slice(offset, offset + limit);
     }
   },
@@ -121,12 +111,12 @@ export const api = {
         method: "POST",
         body: JSON.stringify(data),
       });
-      const localLogs = getLocal<CodingLog[]>("streakflow_logs", []);
-      setLocal("streakflow_logs", [item, ...localLogs]);
+      const localLogs = getLocal<CodingLog[]>(STORAGE_KEYS.LOGS, []);
+      setLocal(STORAGE_KEYS.LOGS, [item, ...localLogs]);
       return item;
     } catch {
       // Offline local creation
-      const localLogs = getLocal<CodingLog[]>("streakflow_logs", []);
+      const localLogs = getLocal<CodingLog[]>(STORAGE_KEYS.LOGS, []);
       const newLog: CodingLog = {
         id: Date.now(),
         problem_title: data.problem_title,
@@ -136,22 +126,12 @@ export const api = {
         solved_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
       };
-      setLocal("streakflow_logs", [newLog, ...localLogs]);
+      setLocal(STORAGE_KEYS.LOGS, [newLog, ...localLogs]);
 
-      // Update local user stats XP
-      const stats = getLocal<UserStats>("streakflow_user_stats", {
-        id: 1,
-        xp: 100,
-        level: 1,
-        current_streak_days: 1,
-        longest_streak_days: 1,
-        last_active_date: new Date().toISOString().slice(0, 10),
-      });
+      // Calculate streak and award XP via central engine
       const xpToAdd =
         data.difficulty === "Easy" ? 10 : data.difficulty === "Medium" ? 25 : 50;
-      stats.xp += xpToAdd;
-      stats.level = Math.floor(stats.xp / 300) + 1;
-      setLocal("streakflow_user_stats", stats);
+      recordUserActivity(xpToAdd);
 
       return newLog;
     }
@@ -311,19 +291,9 @@ export const api = {
       );
 
       if (newLogs.length > 0 || updatedCount > 0) {
-        setLocal("streakflow_logs", [...newLogs, ...localLogs]);
+        setLocal(STORAGE_KEYS.LOGS, [...newLogs, ...localLogs]);
         if (newLogs.length > 0) {
-          const stats = getLocal<UserStats>("streakflow_user_stats", {
-            id: 1,
-            xp: 100,
-            level: 1,
-            current_streak_days: 1,
-            longest_streak_days: 1,
-            last_active_date: new Date().toISOString().slice(0, 10),
-          });
-          stats.xp += syncedCount * 30;
-          stats.level = Math.floor(stats.xp / 300) + 1;
-          setLocal("streakflow_user_stats", stats);
+          recordUserActivity(syncedCount * 30);
         }
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event("streakflow-stats-updated"));
@@ -354,7 +324,7 @@ export const api = {
       }
       const data = await res.json();
 
-      const localLogs = getLocal<CodingLog[]>("streakflow_logs", []);
+      const localLogs = getLocal<CodingLog[]>(STORAGE_KEYS.LOGS, []);
       const existingTitles = new Set(
         localLogs.map((l) => l.problem_title.toLowerCase()),
       );
@@ -381,7 +351,7 @@ export const api = {
               difficulty: sub.difficulty,
               topic_tag: "Codeforces Sync",
               problem_url: sub.url,
-              solved_at: d.toISOString().slice(0, 10),
+              solved_at: getLocalDateString(d),
               created_at: new Date().toISOString(),
             });
           }
@@ -389,18 +359,8 @@ export const api = {
       );
 
       if (newLogs.length > 0) {
-        setLocal("streakflow_logs", [...newLogs, ...localLogs]);
-        const stats = getLocal<UserStats>("streakflow_user_stats", {
-          id: 1,
-          xp: 100,
-          level: 1,
-          current_streak_days: 1,
-          longest_streak_days: 1,
-          last_active_date: new Date().toISOString().slice(0, 10),
-        });
-        stats.xp += syncedCount * 30;
-        stats.level = Math.floor(stats.xp / 300) + 1;
-        setLocal("streakflow_user_stats", stats);
+        setLocal(STORAGE_KEYS.LOGS, [...newLogs, ...localLogs]);
+        recordUserActivity(syncedCount * 30);
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event("streakflow-stats-updated"));
         }
@@ -421,12 +381,14 @@ export const api = {
 
   // Rule of 3 Focus & Focus Sessions
   getTodayFocus: async (): Promise<DailyFocus[]> => {
+    const today = getLocalDateString();
     try {
       const data = await request<DailyFocus[]>("/focus/today");
-      setLocal("streakflow_focus", data);
+      setLocal(STORAGE_KEYS.FOCUS, data);
       return data;
     } catch {
-      return getLocal<DailyFocus[]>("streakflow_focus", []);
+      const allFocus = getLocal<DailyFocus[]>(STORAGE_KEYS.FOCUS, []);
+      return allFocus.filter((f) => f.target_date === today);
     }
   },
 
@@ -434,19 +396,20 @@ export const api = {
     priority_order: number;
     title: string;
   }): Promise<DailyFocus> => {
+    const today = getLocalDateString();
     try {
       const item = await request<DailyFocus>("/focus", {
         method: "POST",
         body: JSON.stringify(data),
       });
-      const local = getLocal<DailyFocus[]>("streakflow_focus", []);
+      const local = getLocal<DailyFocus[]>(STORAGE_KEYS.FOCUS, []);
       const filtered = local.filter(
         (f) => f.priority_order !== data.priority_order,
       );
-      setLocal("streakflow_focus", [...filtered, item]);
+      setLocal(STORAGE_KEYS.FOCUS, [...filtered, item]);
       return item;
     } catch {
-      const local = getLocal<DailyFocus[]>("streakflow_focus", []);
+      const local = getLocal<DailyFocus[]>(STORAGE_KEYS.FOCUS, []);
       const filtered = local.filter(
         (f) => f.priority_order !== data.priority_order,
       );
@@ -454,11 +417,11 @@ export const api = {
         id: Date.now(),
         priority_order: data.priority_order,
         title: data.title,
-        target_date: new Date().toISOString().slice(0, 10),
+        target_date: today,
         is_completed: false,
         created_at: new Date().toISOString(),
       };
-      setLocal("streakflow_focus", [...filtered, newItem]);
+      setLocal(STORAGE_KEYS.FOCUS, [...filtered, newItem]);
       return newItem;
     }
   },
@@ -467,37 +430,41 @@ export const api = {
     id: number,
     data: { is_completed?: boolean; title?: string },
   ): Promise<DailyFocus> => {
+    const today = getLocalDateString();
     try {
       const item = await request<DailyFocus>(`/focus/${id}`, {
         method: "PATCH",
         body: JSON.stringify(data),
       });
-      const local = getLocal<DailyFocus[]>("streakflow_focus", []);
+      const local = getLocal<DailyFocus[]>(STORAGE_KEYS.FOCUS, []);
       setLocal(
-        "streakflow_focus",
+        STORAGE_KEYS.FOCUS,
         local.map((f) => (f.id === id ? item : f)),
       );
       return item;
     } catch {
-      const local = getLocal<DailyFocus[]>("streakflow_focus", []);
+      const local = getLocal<DailyFocus[]>(STORAGE_KEYS.FOCUS, []);
       const existing = local.find((f) => f.id === id);
       if (
         data.is_completed !== undefined &&
         existing &&
         existing.is_completed !== data.is_completed
       ) {
-        const stats = getLocal<UserStats>("streakflow_user_stats", {
-          id: 1,
-          xp: 100,
-          level: 1,
-          current_streak_days: 1,
-          longest_streak_days: 1,
-          last_active_date: new Date().toISOString().slice(0, 10),
-        });
-        const deltaXP = data.is_completed ? 20 : -20;
-        stats.xp = Math.max(0, stats.xp + deltaXP);
-        stats.level = Math.floor(stats.xp / 300) + 1;
-        setLocal("streakflow_user_stats", stats);
+        if (data.is_completed) {
+          recordUserActivity(20);
+        } else {
+          const stats = getLocal<UserStats>(STORAGE_KEYS.USER_STATS, {
+            id: 1,
+            xp: 100,
+            level: 1,
+            current_streak_days: 0,
+            longest_streak_days: 0,
+            last_active_date: null,
+          });
+          stats.xp = Math.max(0, stats.xp - 20);
+          stats.level = Math.floor(stats.xp / 300) + 1;
+          setLocal(STORAGE_KEYS.USER_STATS, stats);
+        }
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event("streakflow-stats-updated"));
         }
@@ -508,12 +475,12 @@ export const api = {
             id,
             priority_order: 1,
             title: data.title || "",
-            target_date: new Date().toISOString().slice(0, 10),
+            target_date: today,
             is_completed: Boolean(data.is_completed),
             created_at: new Date().toISOString(),
           } as DailyFocus);
       setLocal(
-        "streakflow_focus",
+        STORAGE_KEYS.FOCUS,
         local.map((f) => (f.id === id ? updated : f)),
       );
       return updated;
@@ -524,9 +491,9 @@ export const api = {
     try {
       await request<void>(`/focus/${id}`, { method: "DELETE" });
     } catch {}
-    const local = getLocal<DailyFocus[]>("streakflow_focus", []);
+    const local = getLocal<DailyFocus[]>(STORAGE_KEYS.FOCUS, []);
     setLocal(
-      "streakflow_focus",
+      STORAGE_KEYS.FOCUS,
       local.filter((f) => f.id !== id),
     );
   },
@@ -536,16 +503,16 @@ export const api = {
     session_type?: string;
     xp_earned?: number;
   }): Promise<FocusSession> => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getLocalDateString();
     const addedMinutes = Math.max(1, Math.round(data.duration_seconds / 60));
 
     // Update local cache immediately
     if (typeof window !== "undefined") {
-      const todayKey = `streakflow_focus_mins_${today}`;
+      const todayKey = `${STORAGE_KEYS.FOCUS_TODAY_PREFIX}${today}`;
       const currToday = parseInt(localStorage.getItem(todayKey) || "0", 10);
       localStorage.setItem(todayKey, (currToday + addedMinutes).toString());
 
-      const totalKey = "streakflow_focus_total_completed_mins";
+      const totalKey = STORAGE_KEYS.FOCUS_TOTAL_COMPLETED_MINS;
       const currTotal = parseInt(localStorage.getItem(totalKey) || "0", 10);
       localStorage.setItem(totalKey, (currTotal + addedMinutes).toString());
     }
@@ -555,11 +522,11 @@ export const api = {
         method: "POST",
         body: JSON.stringify(data),
       });
-      const sessions = getLocal<FocusSession[]>("streakflow_sessions", []);
-      setLocal("streakflow_sessions", [item, ...sessions]);
+      const sessions = getLocal<FocusSession[]>("kanso_sessions", []);
+      setLocal("kanso_sessions", [item, ...sessions]);
       return item;
     } catch {
-      const sessions = getLocal<FocusSession[]>("streakflow_sessions", []);
+      const sessions = getLocal<FocusSession[]>("kanso_sessions", []);
       const newSession: FocusSession = {
         id: Date.now(),
         duration_seconds: data.duration_seconds,
@@ -568,19 +535,10 @@ export const api = {
         xp_earned: data.xp_earned || 50,
         completed_at: new Date().toISOString(),
       };
-      setLocal("streakflow_sessions", [newSession, ...sessions]);
+      setLocal("kanso_sessions", [newSession, ...sessions]);
 
-      // Add XP to user stats
-      const stats = getLocal<UserStats>("streakflow_user_stats", {
-        id: 1,
-        xp: 100,
-        level: 1,
-        current_streak_days: 1,
-        longest_streak_days: 1,
-      });
-      stats.xp += data.xp_earned || 50;
-      stats.level = Math.floor(stats.xp / 300) + 1;
-      setLocal("streakflow_user_stats", stats);
+      // Central activity & streak evaluation
+      recordUserActivity(data.xp_earned || 50);
 
       return newSession;
     }
@@ -739,31 +697,39 @@ export const api = {
       const item = await request<StudentRoutine>(`/routines/${id}/toggle`, {
         method: "PATCH",
       });
-      const local = getLocal<StudentRoutine[]>("streakflow_routines", []);
+      const local = getLocal<StudentRoutine[]>(STORAGE_KEYS.ROUTINES, []);
       setLocal(
-        "streakflow_routines",
+        STORAGE_KEYS.ROUTINES,
         local.map((r) => (r.id === id ? item : r)),
       );
       return item;
     } catch {
-      const local = getLocal<StudentRoutine[]>("streakflow_routines", []);
+      const local = getLocal<StudentRoutine[]>(STORAGE_KEYS.ROUTINES, []);
       const item = local.find((r) => r.id === id);
       if (item) {
-        item.is_completed_today = !item.is_completed_today;
-        setLocal("streakflow_routines", local);
-
-        const stats = getLocal<UserStats>("streakflow_user_stats", {
-          id: 1,
-          xp: 100,
-          level: 1,
-          current_streak_days: 1,
-          longest_streak_days: 1,
-          last_active_date: new Date().toISOString().slice(0, 10),
-        });
-        const deltaXP = item.is_completed_today ? 40 : -40;
-        stats.xp = Math.max(0, stats.xp + deltaXP);
-        stats.level = Math.floor(stats.xp / 300) + 1;
-        setLocal("streakflow_user_stats", stats);
+        const nextState = !item.is_completed_today;
+        item.is_completed_today = nextState;
+        if (nextState) {
+          item.last_completed_date = getLocalDateString();
+          recordUserActivity(40);
+        } else {
+          item.last_completed_date = null;
+          const current = getLocal<UserStats>(STORAGE_KEYS.USER_STATS, {
+            id: 1,
+            xp: 100,
+            level: 1,
+            current_streak_days: 0,
+            longest_streak_days: 0,
+            last_active_date: null,
+          });
+          const newXP = Math.max(0, current.xp - 40);
+          setLocal(STORAGE_KEYS.USER_STATS, {
+            ...current,
+            xp: newXP,
+            level: Math.floor(newXP / 300) + 1,
+          });
+        }
+        setLocal(STORAGE_KEYS.ROUTINES, local);
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event("streakflow-stats-updated"));
         }
@@ -777,17 +743,23 @@ export const api = {
   getUserStats: async (): Promise<UserStats> => {
     try {
       const data = await request<UserStats>("/user/stats");
-      setLocal("streakflow_user_stats", data);
+      setLocal(STORAGE_KEYS.USER_STATS, data);
       return data;
     } catch {
-      return getLocal<UserStats>("streakflow_user_stats", {
+      const raw = getLocal<UserStats>(STORAGE_KEYS.USER_STATS, {
         id: 1,
         xp: 150,
         level: 1,
-        current_streak_days: 1,
-        longest_streak_days: 1,
-        last_active_date: new Date().toISOString().slice(0, 10),
+        current_streak_days: 0,
+        longest_streak_days: 0,
+        last_active_date: null,
       });
+      const streakInfo = getStreakStatus(raw);
+      return {
+        ...raw,
+        current_streak_days: streakInfo.currentStreak,
+        longest_streak_days: streakInfo.longestStreak,
+      };
     }
   },
 
@@ -797,11 +769,14 @@ export const api = {
       const keysToRemove: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith("streakflow_")) {
-          // Preserve theme choice, wipe all user data and counters
+        if (key && (key.startsWith("streakflow_") || key.startsWith("kanso_"))) {
+          // Preserve theme choice and safety backup snapshot
           if (
+            key !== STORAGE_KEYS.THEME_MODE &&
+            key !== STORAGE_KEYS.ACCENT_COLOR &&
             key !== "streakflow_theme_mode" &&
-            key !== "streakflow_accent_color"
+            key !== "streakflow_accent_color" &&
+            key !== STORAGE_KEYS.LEGACY_BACKUP_SNAPSHOT
           ) {
             keysToRemove.push(key);
           }
@@ -816,14 +791,17 @@ export const api = {
         level: 1,
         current_streak_days: 0,
         longest_streak_days: 0,
-        last_active_date: new Date().toISOString().slice(0, 10),
+        last_active_date: null,
       };
-      setLocal("streakflow_user_stats", freshStats);
+      setLocal(STORAGE_KEYS.USER_STATS, freshStats);
 
       // Dispatch events across app
       window.dispatchEvent(new Event("streakflow-data-reset"));
       window.dispatchEvent(new Event("streakflow-stats-updated"));
       window.dispatchEvent(new Event("focus-session-completed"));
+      window.dispatchEvent(
+        new CustomEvent("kanso-storage-updated", { detail: { key: "all" } }),
+      );
     }
     return { status: "success", message: "All user data reset successfully" };
   },

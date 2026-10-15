@@ -21,6 +21,7 @@ import SettingsView from "@/components/settings/SettingsView";
 import TasksAndNotes from "@/components/tasks/TasksAndNotes";
 import { api } from "@/lib/api";
 import { driveSync } from "@/lib/driveSync";
+import { initKansoStorage, checkAndApplyRollover } from "@/lib/storage";
 import PomodoroTimer from "@/components/focus/PomodoroTimer";
 import {
   CodingLog,
@@ -67,9 +68,11 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    // 1. Initialize Kanso storage (idempotent legacy migration & daily rollover)
+    initKansoStorage();
     loadDashboard();
 
-    // Periodic Google Drive Auto-Sync every 5 minutes if authenticated
+    // 2. Periodic Google Drive Auto-Sync every 5 minutes if authenticated
     const autoSyncTimer = setInterval(
       () => {
         driveSync.triggerAutoSync();
@@ -81,13 +84,32 @@ export default function Home() {
       driveSync.scheduleAutoSync(2500);
     };
 
+    const onStorageUpdated = () => {
+      loadDashboard();
+      driveSync.scheduleAutoSync(2500);
+    };
+
+    // 3. Re-check daily rollover when user resumes app or tab becomes visible
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        const rollover = checkAndApplyRollover();
+        if (rollover.rolledOver) {
+          loadDashboard();
+        }
+      }
+    };
+
     window.addEventListener("focus-session-completed", onDataChanged);
     window.addEventListener("streakflow-stats-updated", onDataChanged);
+    window.addEventListener("kanso-storage-updated", onStorageUpdated);
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
       clearInterval(autoSyncTimer);
       window.removeEventListener("focus-session-completed", onDataChanged);
       window.removeEventListener("streakflow-stats-updated", onDataChanged);
+      window.removeEventListener("kanso-storage-updated", onStorageUpdated);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [loadDashboard]);
 
@@ -230,9 +252,9 @@ export default function Home() {
       />
 
       {/* Desktop Navigation Tabs */}
-      <div className="hidden md:flex items-center gap-2 mb-8 border-b border-zinc-800 pb-3 overflow-x-auto scrollbar-none">
+      <div className="hidden md:flex items-center gap-2 mb-8 border-b border-zinc-200 dark:border-zinc-800 pb-3 overflow-x-auto scrollbar-none">
         {[
-          { id: "arena", label: "The Arena", icon: Terminal },
+          { id: "arena", label: "Arena", icon: Terminal },
           { id: "focus", label: "Focus", icon: Timer },
           { id: "tasks", label: "Tasks & Notes", icon: CheckSquare },
           { id: "stats", label: "Statistics", icon: Award },
@@ -246,8 +268,8 @@ export default function Home() {
               onClick={() => setActiveTab(t.id as NavTab)}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono transition cursor-pointer whitespace-nowrap ${
                 isActive
-                  ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900"
+                  ? "bg-zinc-200/70 dark:bg-zinc-800 text-accent font-bold border border-zinc-300 dark:border-zinc-700 shadow-xs"
+                  : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-900"
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -300,26 +322,26 @@ export default function Home() {
           />
 
           {activeTab === "focus" && (
-            <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-5 font-mono text-xs text-zinc-400 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-5 font-mono text-xs text-zinc-600 dark:text-zinc-400 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-emerald-950/60 border border-emerald-800 text-emerald-400 rounded-xl shrink-0">
+                <div className="p-2.5 bg-accent-subtle border border-accent text-accent rounded-xl shrink-0">
                   <Timer className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="text-zinc-200 font-bold block">
+                  <span className="text-zinc-800 dark:text-zinc-200 font-bold block">
                     Deep Work Flow State & Focus Audio
                   </span>
                   <span className="text-[11px] text-zinc-500">
                     Use{" "}
-                    <kbd className="px-1.5 py-0.5 bg-zinc-950 border border-zinc-800 rounded text-zinc-300">
+                    <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-zinc-700 dark:text-zinc-300">
                       Space
                     </kbd>{" "}
                     to toggle,{" "}
-                    <kbd className="px-1.5 py-0.5 bg-zinc-950 border border-zinc-800 rounded text-zinc-300">
+                    <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-zinc-700 dark:text-zinc-300">
                       M
                     </kbd>{" "}
                     for Focus Audio, and{" "}
-                    <kbd className="px-1.5 py-0.5 bg-zinc-950 border border-zinc-800 rounded text-zinc-300">
+                    <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-zinc-700 dark:text-zinc-300">
                       F
                     </kbd>{" "}
                     for Zen Fullscreen
@@ -329,7 +351,7 @@ export default function Home() {
 
               <button
                 onClick={() => setIsPomodoroFullscreen(true)}
-                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition cursor-pointer shrink-0"
+                className="px-4 py-2 bg-accent hover:opacity-95 text-white font-bold rounded-xl transition cursor-pointer shrink-0 shadow-xs"
               >
                 Zen Fullscreen
               </button>

@@ -1,16 +1,16 @@
-# Go with Flow
+# Kanso
 
-A local-first productivity tracker and daily command center for developers and students.
+A minimal, calm, local-first productivity application and daily command center for developers and students.
 
 ---
 
 ## Why I Built This
 
-I built Go with Flow because I wanted a fast, distraction-free dashboard to manage daily habits, track LeetCode and Codeforces problem practice, and do focused deep-work sessions—without paying for subscriptions or storing personal routines on third-party servers.
+I built Kanso because I wanted a fast, distraction-free dashboard to manage daily habits, track LeetCode and Codeforces problem practice, and do focused deep-work sessions—without paying for subscriptions or storing personal routines on third-party servers.
 
-Most productivity web apps require a hosted database and backend API. When deployed on free hosting tiers (such as Render or Railway), the backend sleeps after 15 minutes, resulting in 50–90 second cold-start delays every time you open the app on your phone.
+Most productivity web apps require a hosted database and backend API. When deployed on free hosting tiers, the backend sleeps after 15 minutes, resulting in cold-start delays every time you open the app on your phone.
 
-Go with Flow solves this by running 100% local-first:
+Kanso solves this by running 100% local-first:
 - **Zero backend cold-starts:** All tasks, coding logs, focus statistics, and routines live directly in your browser's persistent storage.
 - **Serverless API proxies:** LeetCode and Codeforces synchronization is handled directly by Next.js serverless route handlers, avoiding CORS issues without needing a Python server.
 - **Private multi-device backup:** Optionally back up encrypted snapshots directly into your personal Google Drive sandbox (`appDataFolder`) using Google OAuth.
@@ -29,7 +29,7 @@ Go with Flow solves this by running 100% local-first:
 - **Pomodoro Engine:** Configurable work sprint intervals (15m, 25m, 50m, or custom duration).
 - **Fullscreen Zen Mode:** Automatically fades away all navigation and controls on cursor idle so you can concentrate purely on the countdown.
 - **Audio Hub:**
-  - YouTube background player: paste any YouTube live stream or video (e.g. Lofi Girl, synthwave).
+  - YouTube background player: paste any YouTube live stream or video (e.g. Lofi Girl, ambient).
   - Curated lo-fi web radio and direct `.mp3` stream support.
   - Offline procedural synthesizer: generates Brownian noise, 10Hz binaural alpha brainwaves, and rain sounds using the Web Audio API without using network bandwidth.
 - **Anti-Cheat XP:** Focus minutes and XP are only recorded when the timer naturally finishes (`00:00`).
@@ -42,7 +42,8 @@ Go with Flow solves this by running 100% local-first:
 - **Balanced XP Economy:** Completing tasks awards XP; unchecking them deducts the exact XP awarded.
 
 ### Appearance & Privacy
-- **Themes & White Mode:** Toggle between Dark Cyberpunk and a clean, high-contrast Light/White mode, accompanied by 5 accent colors (Emerald, Cyan, Purple, Amber, Rose).
+- **Calm Themes:** Dual themes—**Sumi** (Dark) and **Washi** (Light)—with automatic System mode resolution.
+- **Calm Accent Palettes:** 4 refined accent palettes: Pine (default), Ceramic, Sand, and Clay.
 - **Google Drive Cloud Vault:** Save and restore your entire data snapshot to your private Google Drive app folder.
 - **Reset Safety Gate:** Requires typing `DELETE ALL MY DATA` to purge local records.
 
@@ -113,7 +114,7 @@ Because the application is serverless, there are no databases to provision or ba
 
 ## Installing on Mobile (PWA)
 
-To run Go with Flow as a standalone mobile app:
+To run Kanso as a standalone mobile app:
 
 - **iOS (Safari):** Open your Vercel URL in Safari → tap Share (`⎋`) → select **Add to Home Screen**.
 - **Android (Chrome):** Open your Vercel URL in Chrome → tap the menu (`⋮`) → select **Install App** or **Add to Home Screen**.

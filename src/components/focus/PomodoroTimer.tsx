@@ -164,6 +164,8 @@ export default function PomodoroTimer({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ytPlayerRef = useRef<YouTubePlayer | null>(null);
   const prevVolumeRef = useRef<number>(0.4);
+  const targetEndTimeRef = useRef<number | null>(null);
+  const isCompletingRef = useRef<boolean>(false);
 
   // Web Audio Context & Nodes for offline sound generator
   const synthCtxRef = useRef<AudioContext | null>(null);
@@ -901,16 +903,23 @@ export default function PomodoroTimer({
   // Timer mode toggle sound
   const handleToggleTimer = () => {
     if (!isRunning) {
+      isCompletingRef.current = false;
       playStartSound();
+      targetEndTimeRef.current = Date.now() + timeLeft * 1000;
       setIsRunning(true);
     } else {
       playPauseSound();
+      targetEndTimeRef.current = null;
       setIsRunning(false);
     }
   };
 
   // Automatic Sprint Completion handler (Triggered strictly when timer reaches 00:00)
   const handleLogAndCompleteSprint = (customMins?: number) => {
+    if (isCompletingRef.current) return;
+    isCompletingRef.current = true;
+
+    targetEndTimeRef.current = null;
     setIsRunning(false);
     playEndChime();
 
@@ -956,19 +965,62 @@ export default function PomodoroTimer({
     setTimeLeft(getModeTime(nextMode));
   };
 
-  // Timer Tick
+  // Precision Wall-Clock Timer Tick Engine
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    if (isRunning && timeLeft > 0) {
+    if (isRunning) {
+      if (!targetEndTimeRef.current) {
+        targetEndTimeRef.current = Date.now() + timeLeft * 1000;
+      }
       timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (timeLeft === 0 && isRunning) {
-      handleLogAndCompleteSprint(customFocusMins);
+        if (!targetEndTimeRef.current) return;
+        const now = Date.now();
+        const remaining = Math.max(
+          0,
+          Math.round((targetEndTimeRef.current - now) / 1000),
+        );
+        setTimeLeft(remaining);
+        if (remaining <= 0) {
+          targetEndTimeRef.current = null;
+          handleLogAndCompleteSprint(customFocusMins);
+        }
+      }, 500);
+    } else {
+      targetEndTimeRef.current = null;
     }
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRunning, timeLeft, customFocusMins, mode, completedSessions]);
+  }, [isRunning, customFocusMins, mode, completedSessions]);
+
+  // Sync remaining seconds on tab visibility change or window focus to prevent background drift
+  useEffect(() => {
+    const handleSyncOnResume = () => {
+      if (
+        document.visibilityState === "visible" &&
+        isRunning &&
+        targetEndTimeRef.current
+      ) {
+        const now = Date.now();
+        const remaining = Math.max(
+          0,
+          Math.round((targetEndTimeRef.current - now) / 1000),
+        );
+        setTimeLeft(remaining);
+        if (remaining <= 0) {
+          targetEndTimeRef.current = null;
+          handleLogAndCompleteSprint(customFocusMins);
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleSyncOnResume);
+    window.addEventListener("focus", handleSyncOnResume);
+    return () => {
+      document.removeEventListener("visibilitychange", handleSyncOnResume);
+      window.removeEventListener("focus", handleSyncOnResume);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRunning, customFocusMins, mode, completedSessions]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -977,12 +1029,16 @@ export default function PomodoroTimer({
   };
 
   const switchMode = (newMode: TimerMode) => {
+    isCompletingRef.current = false;
+    targetEndTimeRef.current = null;
     setIsRunning(false);
     setMode(newMode);
     setTimeLeft(getModeTime(newMode));
   };
 
   const resetTimer = (targetMode: TimerMode = mode) => {
+    isCompletingRef.current = false;
+    targetEndTimeRef.current = null;
     setIsRunning(false);
     setTimeLeft(getModeTime(targetMode));
   };
@@ -1358,27 +1414,21 @@ export default function PomodoroTimer({
           >
             <div className="flex items-center gap-3">
               <span
-                className={`w-2.5 h-2.5 rounded-full ${
+                className={`w-2 h-2 rounded-full ${
                   isRunning ? "animate-pulse" : ""
-                } ${
-                  mode === "focus"
-                    ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"
-                    : mode === "short_break"
-                      ? "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]"
-                      : "bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.8)]"
-                }`}
+                } bg-accent`}
               />
-              <span className="font-mono text-xs sm:text-sm font-bold tracking-widest uppercase text-zinc-300">
+              <span className="font-mono text-xs sm:text-sm font-semibold tracking-wider uppercase text-zinc-300">
                 {mode === "focus"
-                  ? `Deep Work Sprint (${customFocusMins}m)`
+                  ? `Focus (${customFocusMins}m)`
                   : mode === "short_break"
                     ? "Short Break"
                     : "Long Break"}
               </span>
 
               {completedSessions > 0 && (
-                <span className="hidden sm:flex items-center gap-1 font-mono text-xs bg-orange-950/40 border border-orange-800/60 text-orange-400 px-2 py-0.5 rounded-md">
-                  <Flame className="w-3 h-3 fill-orange-400" />
+                <span className="hidden sm:flex items-center gap-1 font-mono text-xs bg-zinc-800/80 border border-zinc-700/80 text-zinc-300 px-2 py-0.5 rounded-md">
+                  <Flame className="w-3 h-3 text-accent" />
                   {completedSessions}{" "}
                   {completedSessions === 1 ? "Session" : "Sessions"}
                 </span>
@@ -1390,7 +1440,7 @@ export default function PomodoroTimer({
                 onClick={() => setShowMusicMenu(!showMusicMenu)}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-mono transition cursor-pointer ${
                   musicPlaying
-                    ? "bg-emerald-950/70 border-emerald-500 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]"
+                    ? "bg-accent-subtle border-accent text-accent font-semibold"
                     : "bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-zinc-200"
                 }`}
                 title="Focus Audio (M)"
@@ -1503,13 +1553,7 @@ export default function PomodoroTimer({
               <div
                 className={`text-7xl xs:text-8xl sm:text-9xl md:text-[14vw] lg:text-[17vw] font-black font-mono tracking-tighter tabular-nums leading-none select-none ${
                   isIdle && isRunning ? "scale-105" : "scale-100"
-                } transition-transform duration-700 ${
-                  mode === "focus"
-                    ? "text-white drop-shadow-[0_0_60px_rgba(16,185,129,0.25)]"
-                    : mode === "short_break"
-                      ? "text-white drop-shadow-[0_0_60px_rgba(6,182,212,0.25)]"
-                      : "text-white drop-shadow-[0_0_60px_rgba(168,85,247,0.25)]"
-                }`}
+                } transition-transform duration-700 text-white`}
               >
                 {formatTime(timeLeft)}
               </div>
@@ -1540,11 +1584,7 @@ export default function PomodoroTimer({
                 className={`h-14 sm:h-16 px-8 sm:px-12 rounded-2xl font-mono text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3 transition-all cursor-pointer ${
                   isRunning
                     ? "bg-zinc-900 border border-zinc-700 text-zinc-200 hover:bg-zinc-800"
-                    : mode === "focus"
-                      ? "bg-emerald-500 text-black hover:bg-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.4)]"
-                      : mode === "short_break"
-                        ? "bg-cyan-500 text-black hover:bg-cyan-400 shadow-[0_0_30px_rgba(6,182,212,0.4)]"
-                        : "bg-purple-500 text-white hover:bg-purple-400 shadow-[0_0_30px_rgba(168,85,247,0.4)]"
+                    : "bg-accent text-white hover:opacity-95 shadow-xs"
                 }`}
               >
                 {isRunning ? (
@@ -1603,7 +1643,7 @@ export default function PomodoroTimer({
               </span>
             </div>
 
-            <div className="hidden sm:block text-zinc-500">Go with Flow</div>
+            <div className="hidden sm:block text-zinc-500 font-semibold tracking-wider">Kanso</div>
           </div>
 
           {renderMusicModal()}
@@ -1725,7 +1765,7 @@ export default function PomodoroTimer({
 
             <button
               onClick={enterFullscreen}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-950/40 hover:bg-emerald-950/70 border border-emerald-800/70 hover:border-emerald-600 text-emerald-400 text-xs font-mono font-bold transition cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-accent-subtle hover:opacity-90 border border-accent text-accent text-xs font-mono font-semibold transition cursor-pointer shadow-xs"
               title="Enter Fullscreen (F)"
             >
               <Maximize2 className="w-3.5 h-3.5" />
@@ -1740,10 +1780,10 @@ export default function PomodoroTimer({
           className="my-2 z-10 text-center cursor-pointer group"
           title="Click for Fullscreen Zen Mode"
         >
-          <div className="text-6xl sm:text-7xl md:text-8xl font-black font-mono tracking-tighter text-white tabular-nums select-none drop-shadow-[0_0_25px_rgba(255,255,255,0.06)] group-hover:scale-[1.02] transition-transform">
+          <div className="text-6xl sm:text-7xl md:text-8xl font-black font-mono tracking-tighter text-zinc-900 dark:text-zinc-100 tabular-nums select-none group-hover:scale-[1.01] transition-transform">
             {formatTime(timeLeft)}
           </div>
-          <p className="text-[11px] font-mono tracking-widest text-zinc-500 uppercase mt-2 group-hover:text-emerald-400 transition-colors">
+          <p className="text-[11px] font-mono tracking-widest text-zinc-500 uppercase mt-2 group-hover:text-accent transition-colors">
             {isRunning
               ? mode === "focus"
                 ? "Deep Work Sprint • In The Flow"
@@ -1758,10 +1798,8 @@ export default function PomodoroTimer({
             onClick={handleToggleTimer}
             className={`h-12 px-6 rounded-xl font-mono text-xs font-bold tracking-wider flex items-center gap-2 transition-all cursor-pointer ${
               isRunning
-                ? "bg-zinc-900 border border-zinc-700 text-zinc-200 hover:bg-zinc-800"
-                : mode === "focus"
-                  ? "bg-emerald-500 text-black hover:bg-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
-                  : "bg-cyan-500 text-black hover:bg-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+                ? "bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800"
+                : "bg-accent text-white hover:opacity-95 shadow-xs"
             }`}
           >
             {isRunning ? (
@@ -1777,7 +1815,7 @@ export default function PomodoroTimer({
 
           <button
             onClick={() => resetTimer(mode)}
-            className="h-12 w-12 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white flex items-center justify-center transition cursor-pointer"
+            className="h-12 w-12 rounded-xl bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 text-zinc-500 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center transition cursor-pointer"
             title="Reset Timer"
           >
             <RotateCcw className="w-4 h-4" />

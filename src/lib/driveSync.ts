@@ -48,6 +48,7 @@ export interface SnapshotPayload {
     stats: unknown;
     tasks: unknown[];
     notes: unknown[];
+    focus_history?: unknown[];
   };
 }
 
@@ -197,24 +198,44 @@ class GoogleDriveSync {
     let localStats = null;
     let localTasks = [];
     let localNotes = [];
+    let localFocusHistory = [];
 
     if (typeof window !== "undefined") {
       try {
-        localLogs = JSON.parse(localStorage.getItem("streakflow_logs") || "[]");
+        localLogs = JSON.parse(
+          localStorage.getItem("kanso_logs") ||
+          localStorage.getItem("streakflow_logs") ||
+          "[]"
+        );
         localFocus = JSON.parse(
-          localStorage.getItem("streakflow_focus") || "[]"
+          localStorage.getItem("kanso_focus") ||
+          localStorage.getItem("streakflow_focus") ||
+          "[]"
+        );
+        localFocusHistory = JSON.parse(
+          localStorage.getItem("kanso_focus_history") ||
+          localStorage.getItem("streakflow_focus_history") ||
+          "[]"
         );
         localRoutines = JSON.parse(
-          localStorage.getItem("streakflow_routines") || "[]"
+          localStorage.getItem("kanso_routines") ||
+          localStorage.getItem("streakflow_routines") ||
+          "[]"
         );
         localStats = JSON.parse(
-          localStorage.getItem("streakflow_user_stats") || "null"
+          localStorage.getItem("kanso_user_stats") ||
+          localStorage.getItem("streakflow_user_stats") ||
+          "null"
         );
         localTasks = JSON.parse(
-          localStorage.getItem("streakflow_tasks") || "[]"
+          localStorage.getItem("kanso_tasks") ||
+          localStorage.getItem("streakflow_tasks") ||
+          "[]"
         );
         localNotes = JSON.parse(
-          localStorage.getItem("streakflow_notes") || "[]"
+          localStorage.getItem("kanso_notes") ||
+          localStorage.getItem("streakflow_notes") ||
+          "[]"
         );
       } catch (err) {
         console.warn("Error reading local snapshot data:", err);
@@ -227,6 +248,7 @@ class GoogleDriveSync {
       data: {
         logs: localLogs,
         focus: localFocus,
+        focus_history: localFocusHistory,
         routines: localRoutines,
         stats: localStats,
         tasks: localTasks,

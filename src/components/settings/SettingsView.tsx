@@ -18,14 +18,19 @@ import {
   Palette,
   CheckCircle2,
   Loader2,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 import { driveSync } from "@/lib/driveSync";
 import { api } from "@/lib/api";
+import { STORAGE_KEYS, getLocal, setLocal } from "@/lib/storage";
 import {
   applyTheme,
   getInitialTheme,
   ACCENT_PALETTES,
   AccentColor,
+  ThemeMode,
 } from "@/lib/theme";
 
 interface SettingsViewProps {
@@ -92,7 +97,8 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
   // Preferences State
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [defaultDuration, setDefaultDuration] = useState("25");
-  const [accentTheme, setAccentTheme] = useState<AccentColor>("emerald");
+  const [themeMode, setThemeMode] = useState<ThemeMode>("system");
+  const [accentTheme, setAccentTheme] = useState<AccentColor>("pine");
   const [driveAutoSync, setDriveAutoSync] = useState(false);
   const [prefLcHandle, setPrefLcHandle] = useState("");
   const [prefCfHandle, setPrefCfHandle] = useState("");
@@ -106,6 +112,7 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const init = getInitialTheme();
+      setThemeMode(init.mode);
       setAccentTheme(init.accent);
 
       const soundVal = localStorage.getItem("streakflow_sound_enabled");
@@ -114,16 +121,13 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
       const durVal = localStorage.getItem("streakflow_focus_duration");
       if (durVal) setDefaultDuration(durVal);
 
-      const themeVal = localStorage.getItem("streakflow_accent_color");
-      if (themeVal) setAccentTheme(themeVal as AccentColor);
-
       const autoSyncVal = localStorage.getItem("streakflow_drive_autosync");
       if (autoSyncVal !== null) setDriveAutoSync(autoSyncVal === "true");
 
-      const savedLc = localStorage.getItem("streakflow_lc_handle");
+      const savedLc = getLocal<string>(STORAGE_KEYS.LC_HANDLE, "");
       if (savedLc) setPrefLcHandle(savedLc);
 
-      const savedCf = localStorage.getItem("streakflow_cf_handle");
+      const savedCf = getLocal<string>(STORAGE_KEYS.CF_HANDLE, "");
       if (savedCf) setPrefCfHandle(savedCf);
     }
 
@@ -137,11 +141,24 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
       }
     };
     window.addEventListener("streakflow-handles-updated", handleHandlesUpdated);
+
+    const handleThemeChanged = (e: Event) => {
+      const custom = e as CustomEvent<{ mode?: ThemeMode; accent?: AccentColor }>;
+      if (custom.detail) {
+        if (custom.detail.mode) setThemeMode(custom.detail.mode);
+        if (custom.detail.accent) setAccentTheme(custom.detail.accent);
+      }
+    };
+    window.addEventListener("kanso-theme-changed", handleThemeChanged);
+    window.addEventListener("streakflow-theme-changed", handleThemeChanged);
+
     return () => {
       window.removeEventListener(
         "streakflow-handles-updated",
         handleHandlesUpdated,
       );
+      window.removeEventListener("kanso-theme-changed", handleThemeChanged);
+      window.removeEventListener("streakflow-theme-changed", handleThemeChanged);
     };
   }, []);
 
@@ -180,12 +197,14 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
     }
   };
 
+  const handleSelectThemeMode = (mode: ThemeMode) => {
+    setThemeMode(mode);
+    applyTheme(mode, accentTheme);
+  };
+
   const handleSelectAccent = (accent: AccentColor) => {
     setAccentTheme(accent);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("streakflow_accent_color", accent);
-    }
-    applyTheme("dark", accent);
+    applyTheme(themeMode, accent);
   };
 
   const toggleDriveAutoSync = () => {
@@ -221,8 +240,8 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
     const cf = prefCfHandle.trim();
 
     if (typeof window !== "undefined") {
-      localStorage.setItem("streakflow_lc_handle", lc);
-      localStorage.setItem("streakflow_cf_handle", cf);
+      setLocal(STORAGE_KEYS.LC_HANDLE, lc);
+      setLocal(STORAGE_KEYS.CF_HANDLE, cf);
       window.dispatchEvent(
         new CustomEvent("streakflow-handles-updated", {
           detail: { lcHandle: lc, cfHandle: cf },
@@ -280,10 +299,14 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
       if (typeof window !== "undefined") {
         try {
           localTasks = JSON.parse(
-            localStorage.getItem("streakflow_tasks") || "[]",
+            localStorage.getItem("kanso_tasks") ||
+            localStorage.getItem("streakflow_tasks") ||
+            "[]",
           );
           localNotes = JSON.parse(
-            localStorage.getItem("streakflow_notes") || "[]",
+            localStorage.getItem("kanso_notes") ||
+            localStorage.getItem("streakflow_notes") ||
+            "[]",
           );
         } catch {}
       }
@@ -323,21 +346,54 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
         return;
       }
       if (typeof window !== "undefined" && snapshot.data) {
+        // Restore all 6 data stores to eliminate data loss
         if (snapshot.data.tasks) {
-          localStorage.setItem(
-            "streakflow_tasks",
-            JSON.stringify(snapshot.data.tasks),
-          );
+          const serialized = JSON.stringify(snapshot.data.tasks);
+          localStorage.setItem("kanso_tasks", serialized);
+          localStorage.setItem("streakflow_tasks", serialized);
         }
         if (snapshot.data.notes) {
-          localStorage.setItem(
-            "streakflow_notes",
-            JSON.stringify(snapshot.data.notes),
-          );
+          const serialized = JSON.stringify(snapshot.data.notes);
+          localStorage.setItem("kanso_notes", serialized);
+          localStorage.setItem("streakflow_notes", serialized);
+        }
+        if (snapshot.data.logs) {
+          const serialized = JSON.stringify(snapshot.data.logs);
+          localStorage.setItem("kanso_logs", serialized);
+          localStorage.setItem("streakflow_logs", serialized);
+        }
+        if (snapshot.data.focus) {
+          const serialized = JSON.stringify(snapshot.data.focus);
+          localStorage.setItem("kanso_focus", serialized);
+          localStorage.setItem("streakflow_focus", serialized);
+        }
+        if (snapshot.data.focus_history) {
+          const serialized = JSON.stringify(snapshot.data.focus_history);
+          localStorage.setItem("kanso_focus_history", serialized);
+          localStorage.setItem("streakflow_focus_history", serialized);
+        }
+        if (snapshot.data.routines) {
+          const serialized = JSON.stringify(snapshot.data.routines);
+          localStorage.setItem("kanso_routines", serialized);
+          localStorage.setItem("streakflow_routines", serialized);
+        }
+        if (snapshot.data.stats) {
+          const serialized = JSON.stringify(snapshot.data.stats);
+          localStorage.setItem("kanso_user_stats", serialized);
+          localStorage.setItem("streakflow_user_stats", serialized);
+        }
+
+        // Notify storage listeners and reload dashboard
+        window.dispatchEvent(new Event("streakflow-stats-updated"));
+        window.dispatchEvent(
+          new CustomEvent("kanso-storage-updated", { detail: { key: "all" } }),
+        );
+        if (onResetComplete) {
+          await onResetComplete();
         }
       }
       setStatusMsg(
-        "Data restored from Drive. Please refresh page to reload state.",
+        "Data successfully restored from Google Drive vault! All records loaded.",
       );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown error";
@@ -387,7 +443,7 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
             </div>
             <div>
               <h4 className="text-sm font-semibold text-zinc-200">
-                Go with Flow Private Storage
+                Kanso Private Storage
               </h4>
               <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
                 Your execution logs, routine blocks, and pomodoro records are
@@ -501,7 +557,7 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
             <div>
               <span className="text-zinc-200 block font-bold flex items-center gap-1.5">
                 {soundEnabled ? (
-                  <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <Volume2 className="w-3.5 h-3.5 text-accent" />
                 ) : (
                   <VolumeX className="w-3.5 h-3.5 text-zinc-500" />
                 )}
@@ -515,7 +571,7 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
               onClick={toggleSound}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer border flex items-center gap-1.5 ${
                 soundEnabled
-                  ? "bg-emerald-950/70 border-emerald-700 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+                  ? "bg-accent-subtle border-accent text-accent"
                   : "bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300"
               }`}
             >
@@ -527,7 +583,7 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
           <div className="pt-3 border-t border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
             <div>
               <span className="text-zinc-200 block font-bold flex items-center gap-1.5">
-                <Timer className="w-3.5 h-3.5 text-cyan-400" />
+                <Timer className="w-3.5 h-3.5 text-accent" />
                 Default Sprint Duration
               </span>
               <span className="text-[11px] text-zinc-500 mt-0.5 block">
@@ -545,7 +601,7 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
                   onClick={() => handleSelectDuration(d.val)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] transition cursor-pointer ${
                     defaultDuration === d.val
-                      ? "bg-zinc-800 text-cyan-400 font-bold border border-zinc-700"
+                      ? "bg-zinc-800 text-accent font-bold border border-zinc-700"
                       : "text-zinc-500 hover:text-zinc-300"
                   }`}
                 >
@@ -555,31 +611,78 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
             </div>
           </div>
 
-          {/* Accent Color Selection */}
-          <div className="pt-3 border-t border-zinc-800 flex items-center justify-between text-xs">
+          {/* Theme Mode Selection */}
+          <div className="pt-3 border-t border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
             <div>
               <span className="text-zinc-200 block font-bold flex items-center gap-1.5">
-                <Palette className="w-3.5 h-3.5 text-purple-400" />
-                Aesthetic Accent
+                <Monitor className="w-3.5 h-3.5 text-accent" />
+                Theme Mode
               </span>
               <span className="text-[11px] text-zinc-500 mt-0.5 block">
-                Terminal glowing highlight accents
+                Sumi (Dark), Washi (Light), or match System
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-zinc-950 p-1 rounded-xl border border-zinc-800 self-start sm:self-auto">
+              {[
+                { id: "dark", label: "Sumi", icon: Moon },
+                { id: "light", label: "Washi", icon: Sun },
+                { id: "system", label: "System", icon: Monitor },
+              ].map((m) => {
+                const Icon = m.icon;
+                const active = themeMode === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => handleSelectThemeMode(m.id as ThemeMode)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] transition cursor-pointer flex items-center gap-1.5 ${
+                      active
+                        ? "bg-zinc-800 text-accent font-semibold border border-zinc-700"
+                        : "text-zinc-500 hover:text-zinc-300"
+                    }`}
+                  >
+                    <Icon className="w-3 h-3" />
+                    {m.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Accent Color Selection */}
+          <div className="pt-3 border-t border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <div>
+              <span className="text-zinc-200 block font-bold flex items-center gap-1.5">
+                <Palette className="w-3.5 h-3.5 text-accent" />
+                Calm Accent Palette
+              </span>
+              <span className="text-[11px] text-zinc-500 mt-0.5 block">
+                Select your focus highlight: Pine, Ceramic, Sand, or Clay
               </span>
             </div>
             <div className="flex items-center gap-2">
-              {ACCENT_PALETTES.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => handleSelectAccent(c.id)}
-                  title={c.name}
-                  className={`w-6 h-6 rounded-full ${c.bgClass} transition-all cursor-pointer ${
-                    accentTheme === c.id
-                      ? "ring-2 ring-white scale-110 shadow-lg"
-                      : "opacity-40 hover:opacity-100"
-                  }`}
-                />
-              ))}
+              {ACCENT_PALETTES.map((c) => {
+                const isSelected = accentTheme === c.id;
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => handleSelectAccent(c.id)}
+                    title={c.name}
+                    aria-label={c.name}
+                    style={{ backgroundColor: c.previewBg }}
+                    className={`w-6 h-6 rounded-full transition-all cursor-pointer relative flex items-center justify-center ${
+                      isSelected
+                        ? "ring-2 ring-white ring-offset-2 ring-offset-zinc-900 scale-110"
+                        : "opacity-60 hover:opacity-100 hover:scale-105"
+                    }`}
+                  >
+                    {isSelected && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -587,7 +690,7 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
           <div className="pt-3 border-t border-zinc-800 flex items-center justify-between text-xs">
             <div>
               <span className="text-zinc-200 block font-bold flex items-center gap-1.5">
-                <Cloud className="w-3.5 h-3.5 text-blue-400" />
+                <Cloud className="w-3.5 h-3.5 text-accent" />
                 Drive Snapshot Auto-Sync
               </span>
               <span className="text-[11px] text-zinc-500 mt-0.5 block">
@@ -599,7 +702,7 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
               onClick={toggleDriveAutoSync}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer border ${
                 driveAutoSync
-                  ? "bg-blue-950/70 border-blue-700 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.2)]"
+                  ? "bg-accent-subtle border-accent text-accent"
                   : "bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-zinc-300"
               }`}
             >
@@ -683,7 +786,7 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
               </h4>
               <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
                 Permanently deletes all logged coding submissions, focus sprint
-                records, routine timetable items, and resets your RPG Level, XP,
+                records, routine timetable items, and resets your Level, XP,
                 and active streaks back to base values.
               </p>
             </div>
@@ -712,7 +815,7 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
               }
               className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
                 confirmText.trim() === REQUIRED_CONFIRM_PHRASE && !isDeleting
-                  ? "bg-rose-600 hover:bg-rose-500 text-white shadow-[0_0_15px_rgba(225,29,72,0.4)]"
+                  ? "bg-rose-600 hover:bg-rose-500 text-white shadow-xs"
                   : "bg-zinc-900 text-zinc-600 border border-zinc-800 cursor-not-allowed opacity-60"
               }`}
             >
