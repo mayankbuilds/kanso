@@ -1,3 +1,12 @@
+import {
+  KansoSnapshot,
+  createKansoSnapshot,
+  validateSnapshot,
+  STORAGE_KEYS,
+  getLocal,
+  setLocal,
+} from "./storage";
+
 export interface GoogleOAuthTokenResponse {
   access_token: string;
   error?: string;
@@ -30,41 +39,29 @@ declare global {
   }
 }
 
-const BACKUP_FILENAME = "streakflow_snapshot.json";
+const CANONICAL_BACKUP_FILENAME = "kanso_snapshot.json";
+const LEGACY_BACKUP_FILENAME = "streakflow_snapshot.json";
 
 export interface SyncState {
   isSignedIn: boolean;
-  userEmail: string | null;
   lastSyncedAt: string | null;
-}
-
-export interface SnapshotPayload {
-  synced_at: string;
-  version: string;
-  data: {
-    logs: unknown[];
-    focus: unknown[];
-    routines: unknown[];
-    stats: unknown;
-    tasks: unknown[];
-    notes: unknown[];
-    focus_history?: unknown[];
-  };
 }
 
 class GoogleDriveSync {
   private tokenClient: GoogleOAuthTokenClient | null = null;
   private accessToken: string | null = null;
+  private autoSyncTimer: NodeJS.Timeout | null = null;
 
   initTokenClient(onSuccess: (token: string) => void) {
     if (typeof window === "undefined" || !window.google) return;
 
     this.tokenClient = window.google.accounts.oauth2.initTokenClient({
       client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
+      // Strict Option B: Drive appDataFolder only. No email or profile identity scopes.
       scope: "https://www.googleapis.com/auth/drive.appdata",
       callback: (resp: GoogleOAuthTokenResponse) => {
         if (resp.error) {
-          console.error("Auth error:", resp);
+          console.error("Google Drive Auth error:", resp.error);
           return;
         }
         this.accessToken = resp.access_token;
@@ -77,43 +74,76 @@ class GoogleDriveSync {
     if (this.tokenClient) {
       this.tokenClient.requestAccessToken({ prompt: "" });
     } else {
-      console.error("Token client not initialized");
+      console.warn("Google Drive token client not initialized");
     }
   }
 
-  // Find file in appDataFolder
-  private async findBackupFileId(): Promise<string | null> {
-    if (!this.accessToken) throw new Error("Not authenticated");
+  isAuthenticated(): boolean {
+    return Boolean(this.accessToken);
+  }
 
-    const query = encodeURIComponent(
-      `name = '${BACKUP_FILENAME}' and 'appDataFolder' in parents and trashed = false`
+  /**
+   * Search for backup files in the private appDataFolder.
+   * Checks canonical kanso_snapshot.json first, then falls back to legacy streakflow_snapshot.json.
+   */
+  private async findBackupFile(): Promise<{ id: string; name: string } | null> {
+    if (!this.accessToken) throw new Error("Not authenticated with Google Drive");
+
+    // 1. Try canonical kanso_snapshot.json
+    const queryCanonical = encodeURIComponent(
+      `name = '${CANONICAL_BACKUP_FILENAME}' and 'appDataFolder' in parents and trashed = false`
     );
-    const res = await fetch(
-      `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${query}&fields=files(id,name)`,
+    const resCanonical = await fetch(
+      `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${queryCanonical}&fields=files(id,name)`,
       {
         headers: { Authorization: `Bearer ${this.accessToken}` },
       }
     );
 
-    const data = await res.json();
-    if (data.files && data.files.length > 0) {
-      return data.files[0].id;
+    if (resCanonical.ok) {
+      const data = await resCanonical.json();
+      if (data.files && data.files.length > 0) {
+        return { id: data.files[0].id, name: data.files[0].name };
+      }
     }
+
+    // 2. Fall back to legacy streakflow_snapshot.json
+    const queryLegacy = encodeURIComponent(
+      `name = '${LEGACY_BACKUP_FILENAME}' and 'appDataFolder' in parents and trashed = false`
+    );
+    const resLegacy = await fetch(
+      `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${queryLegacy}&fields=files(id,name)`,
+      {
+        headers: { Authorization: `Bearer ${this.accessToken}` },
+      }
+    );
+
+    if (resLegacy.ok) {
+      const data = await resLegacy.json();
+      if (data.files && data.files.length > 0) {
+        return { id: data.files[0].id, name: data.files[0].name };
+      }
+    }
+
     return null;
   }
 
-  // Upload or overwrite backup JSON in appDataFolder
-  async uploadSnapshot(payload: SnapshotPayload): Promise<void> {
-    if (!this.accessToken) throw new Error("Not authenticated");
+  /**
+   * Upload or overwrite backup JSON in appDataFolder.
+   * Always names newly created files kanso_snapshot.json.
+   */
+  async uploadSnapshot(customSnapshot?: KansoSnapshot): Promise<KansoSnapshot> {
+    if (!this.accessToken) throw new Error("Not authenticated with Google Drive");
 
-    const existingFileId = await this.findBackupFileId();
+    const payload = customSnapshot || createKansoSnapshot();
+    const existingFile = await this.findBackupFile();
     const fileContent = JSON.stringify(payload, null, 2);
     const blob = new Blob([fileContent], { type: "application/json" });
 
-    if (existingFileId) {
+    if (existingFile) {
       // Overwrite existing file
-      await fetch(
-        `https://www.googleapis.com/upload/drive/v3/files/${existingFileId}?uploadType=media`,
+      const updateRes = await fetch(
+        `https://www.googleapis.com/upload/drive/v3/files/${existingFile.id}?uploadType=media`,
         {
           method: "PATCH",
           headers: {
@@ -123,10 +153,14 @@ class GoogleDriveSync {
           body: blob,
         }
       );
+
+      if (!updateRes.ok) {
+        throw new Error(`Drive upload failed with status ${updateRes.status}`);
+      }
     } else {
       // Create new file in appDataFolder
       const metadata = {
-        name: BACKUP_FILENAME,
+        name: CANONICAL_BACKUP_FILENAME,
         parents: ["appDataFolder"],
       };
 
@@ -137,7 +171,7 @@ class GoogleDriveSync {
       );
       formData.append("file", blob);
 
-      await fetch(
+      const createRes = await fetch(
         "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
         {
           method: "POST",
@@ -145,144 +179,101 @@ class GoogleDriveSync {
           body: formData,
         }
       );
+
+      if (!createRes.ok) {
+        throw new Error(`Drive create failed with status ${createRes.status}`);
+      }
     }
+
+    // Update local last sync timestamp and dispatch events
+    const now = payload.synced_at;
+    setLocal(STORAGE_KEYS.DRIVE_LAST_SYNC, now);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("kanso-drive-synced", { detail: { timestamp: now } })
+      );
+      window.dispatchEvent(
+        new CustomEvent("streakflow-drive-synced", { detail: { timestamp: now } })
+      );
+    }
+
+    return payload;
   }
 
-  // Restore payload from Google Drive
-  async downloadSnapshot(): Promise<SnapshotPayload | null> {
-    if (!this.accessToken) throw new Error("Not authenticated");
+  /**
+   * Downloads and validates the backup snapshot from Google Drive without applying it.
+   */
+  async downloadSnapshot(): Promise<KansoSnapshot | null> {
+    if (!this.accessToken) throw new Error("Not authenticated with Google Drive");
 
-    const fileId = await this.findBackupFileId();
-    if (!fileId) return null;
+    const file = await this.findBackupFile();
+    if (!file) return null;
 
     const res = await fetch(
-      `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+      `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,
       {
         headers: { Authorization: `Bearer ${this.accessToken}` },
       }
     );
 
-    return (await res.json()) as SnapshotPayload;
-  }
-
-  // Check if active access token is present
-  isAuthenticated(): boolean {
-    return Boolean(this.accessToken);
-  }
-
-  // Fetch connected user info
-  async getUserEmail(): Promise<string | null> {
-    if (!this.accessToken) return null;
-    try {
-      const res = await fetch(
-        "https://www.googleapis.com/oauth2/v3/userinfo",
-        {
-          headers: { Authorization: `Bearer ${this.accessToken}` },
-        }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        return data.email || null;
-      }
-    } catch {
-      // Fallback
-    }
-    return null;
-  }
-
-  // Collect full snapshot from local state
-  async createSnapshotPayload(): Promise<SnapshotPayload> {
-    let localLogs = [];
-    let localFocus = [];
-    let localRoutines = [];
-    let localStats = null;
-    let localTasks = [];
-    let localNotes = [];
-    let localFocusHistory = [];
-
-    if (typeof window !== "undefined") {
-      try {
-        localLogs = JSON.parse(
-          localStorage.getItem("kanso_logs") ||
-          localStorage.getItem("streakflow_logs") ||
-          "[]"
-        );
-        localFocus = JSON.parse(
-          localStorage.getItem("kanso_focus") ||
-          localStorage.getItem("streakflow_focus") ||
-          "[]"
-        );
-        localFocusHistory = JSON.parse(
-          localStorage.getItem("kanso_focus_history") ||
-          localStorage.getItem("streakflow_focus_history") ||
-          "[]"
-        );
-        localRoutines = JSON.parse(
-          localStorage.getItem("kanso_routines") ||
-          localStorage.getItem("streakflow_routines") ||
-          "[]"
-        );
-        localStats = JSON.parse(
-          localStorage.getItem("kanso_user_stats") ||
-          localStorage.getItem("streakflow_user_stats") ||
-          "null"
-        );
-        localTasks = JSON.parse(
-          localStorage.getItem("kanso_tasks") ||
-          localStorage.getItem("streakflow_tasks") ||
-          "[]"
-        );
-        localNotes = JSON.parse(
-          localStorage.getItem("kanso_notes") ||
-          localStorage.getItem("streakflow_notes") ||
-          "[]"
-        );
-      } catch (err) {
-        console.warn("Error reading local snapshot data:", err);
-      }
+    if (!res.ok) {
+      throw new Error(`Failed to download backup file (${res.status})`);
     }
 
-    return {
-      synced_at: new Date().toISOString(),
-      version: "2.2.0",
-      data: {
-        logs: localLogs,
-        focus: localFocus,
-        focus_history: localFocusHistory,
-        routines: localRoutines,
-        stats: localStats,
-        tasks: localTasks,
-        notes: localNotes,
-      },
-    };
+    const raw = await res.json();
+    const validated = validateSnapshot(raw);
+    if (!validated.valid || !validated.snapshot) {
+      throw new Error(validated.error || "Corrupted snapshot file downloaded from Drive");
+    }
+
+    return validated.snapshot;
   }
 
-  // Trigger background auto-sync if authenticated and enabled
+  /**
+   * Triggers background auto-sync if authenticated and enabled.
+   * Includes conflict prevention: will not overwrite if remote snapshot has a newer timestamp.
+   */
   async triggerAutoSync(): Promise<boolean> {
     if (typeof window === "undefined") return false;
-    const isAutoSync =
-      localStorage.getItem("streakflow_drive_autosync") === "true";
+    const isAutoSync = getLocal<boolean>(STORAGE_KEYS.DRIVE_AUTOSYNC, false);
     if (!isAutoSync || !this.accessToken) return false;
 
     try {
-      const payload = await this.createSnapshotPayload();
-      await this.uploadSnapshot(payload);
-      const now = new Date().toISOString();
-      localStorage.setItem("streakflow_drive_last_sync", now);
-      window.dispatchEvent(
-        new CustomEvent("streakflow-drive-synced", {
-          detail: { timestamp: now },
-        })
-      );
+      // Check if remote exists and has newer data
+      const remote = await this.downloadSnapshot();
+      if (remote) {
+        const localLastModified = getLocal<string | null>(STORAGE_KEYS.LAST_MODIFIED, null);
+        const localLastSync = getLocal<string | null>(STORAGE_KEYS.DRIVE_LAST_SYNC, null);
+        const localEffectiveTime = localLastModified || localLastSync;
+
+        const remoteTime = new Date(remote.synced_at).getTime();
+        const localTime = localEffectiveTime ? new Date(localEffectiveTime).getTime() : 0;
+
+        // If remote is noticeably newer (e.g. edited on another machine), avoid clobbering
+        if (remoteTime > localTime + 5000) {
+          window.dispatchEvent(
+            new CustomEvent("kanso-sync-conflict", {
+              detail: {
+                remoteSyncedAt: remote.synced_at,
+                localLastModified: localEffectiveTime,
+              },
+            })
+          );
+          return false;
+        }
+      }
+
+      await this.uploadSnapshot();
       return true;
     } catch (err) {
-      console.warn("Google Drive auto-sync error:", err);
+      console.warn("Kanso Google Drive auto-sync error:", err);
       return false;
     }
   }
 
-  // Debounced auto-sync scheduler
-  private autoSyncTimer: NodeJS.Timeout | null = null;
+  /**
+   * Debounced auto-sync scheduler.
+   */
   scheduleAutoSync(delayMs: number = 3000) {
     if (this.autoSyncTimer) clearTimeout(this.autoSyncTimer);
     this.autoSyncTimer = setTimeout(() => {

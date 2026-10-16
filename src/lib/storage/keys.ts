@@ -40,11 +40,13 @@ export const STORAGE_KEYS = {
   DRIVE_LAST_SYNC: "kanso_drive_last_sync",
   DRIVE_AUTOSYNC: "kanso_drive_autosync",
   REVISION_COUNTER: "kanso_revision_counter",
+  LAST_MODIFIED: "kanso_last_modified",
 
   // Lifecycle & migration
   LAST_ROLLOVER_DATE: "kanso_last_rollover_date",
   MIGRATION_STATUS: "kanso_migration_status",
   LEGACY_BACKUP_SNAPSHOT: "kanso_legacy_backup_snapshot",
+  PRE_RESTORE_BACKUP: "kanso_pre_restore_backup",
 } as const;
 
 export type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS];

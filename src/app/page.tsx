@@ -8,6 +8,9 @@ import {
   CheckSquare,
   Award,
   Settings as SettingsIcon,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
 } from "lucide-react";
 import Header from "@/components/navigation/Header";
 import MobileNav, { NavTab } from "@/components/navigation/MobileNav";
@@ -19,9 +22,15 @@ import RoutineSection from "@/components/routine/RoutineSection";
 import AchievementsView from "@/components/stats/AchievementsView";
 import SettingsView from "@/components/settings/SettingsView";
 import TasksAndNotes from "@/components/tasks/TasksAndNotes";
+import CalendarPicker from "@/components/ui/CalendarPicker";
 import { api } from "@/lib/api";
 import { driveSync } from "@/lib/driveSync";
 import { initKansoStorage, checkAndApplyRollover } from "@/lib/storage";
+import {
+  getLocalDateString,
+  formatDisplayDate,
+  parseLocalDateString,
+} from "@/lib/dateUtils";
 import PomodoroTimer from "@/components/focus/PomodoroTimer";
 import {
   CodingLog,
@@ -33,6 +42,9 @@ import {
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<NavTab>("arena");
+  const [selectedDate, setSelectedDate] = useState<string>(() =>
+    getLocalDateString(),
+  );
   const [stats, setStats] = useState<UserStats | null>(null);
   const [heatmapData, setHeatmapData] = useState<HeatmapDay[]>([]);
   const [recentLogs, setRecentLogs] = useState<CodingLog[]>([]);
@@ -256,7 +268,7 @@ export default function Home() {
         {[
           { id: "arena", label: "Arena", icon: Terminal },
           { id: "focus", label: "Focus", icon: Timer },
-          { id: "tasks", label: "Tasks & Notes", icon: CheckSquare },
+          { id: "tasks", label: "Plan", icon: CheckSquare },
           { id: "stats", label: "Statistics", icon: Award },
           { id: "settings", label: "Settings", icon: SettingsIcon },
         ].map((t) => {
@@ -359,12 +371,71 @@ export default function Home() {
           )}
         </div>
 
-        {/* VIEW 3: UNIFIED TASKS & NOTES HUB (Rule-of-3 + Timetable Schedule + Task Backlog + Scratchpad) */}
+        {/* VIEW 3: UNIFIED PLAN HUB (Date Selector + Rule-of-3 + Timetable Schedule + Task Backlog + Daily Notes) */}
         <div
           className={
             activeTab === "tasks" ? "space-y-6 max-w-7xl mx-auto" : "hidden"
           }
         >
+          {/* Plan Hub Shared Date Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-surface-elevated border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xs font-mono">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const d = parseLocalDateString(selectedDate);
+                  d.setDate(d.getDate() - 1);
+                  setSelectedDate(getLocalDateString(d));
+                }}
+                className="p-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer"
+                title="Previous Day"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-accent" />
+                <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  {formatDisplayDate(selectedDate)}
+                </span>
+                <span className="text-xs text-zinc-500 font-mono">
+                  ({selectedDate})
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const d = parseLocalDateString(selectedDate);
+                  d.setDate(d.getDate() + 1);
+                  setSelectedDate(getLocalDateString(d));
+                }}
+                className="p-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer"
+                title="Next Day"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              {selectedDate !== getLocalDateString() && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate(getLocalDateString())}
+                  className="px-2.5 py-1 text-xs rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
+                >
+                  Today
+                </button>
+              )}
+
+              <CalendarPicker
+                value={selectedDate}
+                onChange={setSelectedDate}
+                placeholder="Jump to date"
+              />
+            </div>
+          </div>
+
           {/* Top Mission: Rule-of-3 Daily Focus */}
           <FocusSection
             tasks={focusTasks}
@@ -381,8 +452,13 @@ export default function Home() {
               onCreate={handleCreateRoutine}
               onUpdate={handleUpdateRoutine}
               onDelete={handleDeleteRoutine}
+              selectedDate={selectedDate}
             />
-            <TasksAndNotes onPromoteToFocus={handlePromoteTaskToFocus} />
+            <TasksAndNotes
+              onPromoteToFocus={handlePromoteTaskToFocus}
+              selectedDate={selectedDate}
+              onSelectDate={setSelectedDate}
+            />
           </div>
         </div>
 

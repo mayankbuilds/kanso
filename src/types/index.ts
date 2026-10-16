@@ -124,5 +124,6 @@ export interface QuickNote {
   content: string;
   tags: string[];
   isPinned: boolean;
+  date?: string;
   updatedAt: string;
 }

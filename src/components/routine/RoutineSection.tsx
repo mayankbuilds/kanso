@@ -40,6 +40,7 @@ interface RoutineSectionProps {
     },
   ) => Promise<void>;
   onDelete?: (id: number) => Promise<void>;
+  selectedDate?: string;
 }
 
 const DEFAULT_CATEGORIES = [
@@ -59,6 +60,7 @@ export default function RoutineSection({
   onCreate,
   onUpdate,
   onDelete,
+  selectedDate,
 }: RoutineSectionProps) {
   const [nowStr, setNowStr] = useState("");
   const [activeView, setActiveView] = useState<"daily" | "upcoming">("daily");
@@ -238,11 +240,11 @@ export default function RoutineSection({
 
   // Daily recurring vs Date-specific events
   const dailyRoutines = useMemo(() => {
-    const today = getTodayDateStr();
+    const targetDate = selectedDate || getTodayDateStr();
     return sortedRoutines.filter(
-      (r) => !r.scheduled_date || r.scheduled_date === today,
+      (r) => !r.scheduled_date || r.scheduled_date === targetDate,
     );
-  }, [sortedRoutines]);
+  }, [sortedRoutines, selectedDate]);
 
   const upcomingEvents = useMemo(() => {
     return sortedRoutines
@@ -264,24 +266,24 @@ export default function RoutineSection({
       : 0;
 
   return (
-    <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-5 sm:p-6 flex flex-col h-full space-y-4 font-mono">
+    <div className="bg-surface-elevated border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-5 sm:p-6 flex flex-col h-full space-y-4 font-mono">
       {/* Top Header & View Switcher */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-emerald-400" />
-          <h3 className="text-xs uppercase tracking-wider text-zinc-300 font-bold">
+          <Clock className="w-4 h-4 text-accent" />
+          <h3 className="text-xs uppercase tracking-wider text-zinc-800 dark:text-zinc-200 font-bold">
             Execution Timetable
           </h3>
         </div>
 
         {/* View Switcher Tabs */}
-        <div className="flex items-center gap-1.5 bg-zinc-950 p-1 rounded-xl border border-zinc-800 text-xs self-start sm:self-auto">
+        <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-950 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs self-start sm:self-auto">
           <button
             onClick={() => setActiveView("daily")}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition cursor-pointer text-xs ${
               activeView === "daily"
-                ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700 shadow-sm"
-                : "text-zinc-400 hover:text-zinc-200"
+                ? "bg-surface-elevated text-accent font-bold border border-zinc-300 dark:border-zinc-700 shadow-xs"
+                : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
             }`}
           >
             <Clock className="w-3.5 h-3.5" />
@@ -292,8 +294,8 @@ export default function RoutineSection({
             onClick={() => setActiveView("upcoming")}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition cursor-pointer text-xs ${
               activeView === "upcoming"
-                ? "bg-zinc-800 text-cyan-400 font-bold border border-zinc-700 shadow-sm"
-                : "text-zinc-400 hover:text-zinc-200"
+                ? "bg-surface-elevated text-accent font-bold border border-zinc-300 dark:border-zinc-700 shadow-xs"
+                : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
             }`}
           >
             <CalendarDays className="w-3.5 h-3.5" />
@@ -308,17 +310,17 @@ export default function RoutineSection({
           {/* Arrange by time button */}
           <button
             onClick={() => setSortByTimeAsc(!sortByTimeAsc)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-xs text-zinc-300 transition cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-900/80 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
             title="Arrange schedule by time (Toggle Sort Order)"
           >
-            <ArrowUpDown className="w-3.5 h-3.5 text-emerald-400" />
+            <ArrowUpDown className="w-3.5 h-3.5 text-accent" />
             <span>{sortByTimeAsc ? "00-24" : "24-00"}</span>
           </button>
 
           {/* Manage categories button */}
           <button
             onClick={() => setShowCategoryManager(true)}
-            className="p-1.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition cursor-pointer"
+            className="p-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-900/80 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-zinc-800 dark:hover:text-white transition cursor-pointer"
             title="Manage Categories"
           >
             <Tag className="w-3.5 h-3.5" />
@@ -328,7 +330,7 @@ export default function RoutineSection({
         {/* Add Block */}
         <button
           onClick={() => setShowAdd(!showAdd)}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold rounded-xl transition cursor-pointer shadow-sm"
+          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-accent hover:opacity-95 text-white text-xs font-bold rounded-xl transition cursor-pointer shadow-xs"
         >
           <Plus className="w-4 h-4" />
           <span>{showAdd ? "Cancel" : "Add Routine"}</span>
@@ -337,16 +339,16 @@ export default function RoutineSection({
 
       {/* PROGRESS BAR FOR DAILY ROUTINE */}
       {activeView === "daily" && dailyRoutines.length > 0 && (
-        <div className="bg-zinc-900/30 border border-zinc-800/60 rounded-xl p-3 space-y-1.5">
-          <div className="flex justify-between text-[11px] text-zinc-400">
+        <div className="bg-zinc-100/60 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800/60 rounded-xl p-3 space-y-1.5">
+          <div className="flex justify-between text-[11px] text-zinc-600 dark:text-zinc-400">
             <span>Daily Execution Progress</span>
-            <span className="text-emerald-400 font-bold">
+            <span className="text-accent font-bold">
               {completedCount} / {dailyRoutines.length} ({progressPct}%)
             </span>
           </div>
-          <div className="h-2 w-full bg-zinc-950 rounded-full overflow-hidden border border-zinc-800">
+          <div className="h-2 w-full bg-zinc-200 dark:bg-zinc-950 rounded-full overflow-hidden border border-zinc-200 dark:border-zinc-800">
             <div
-              className="h-full bg-gradient-to-r from-emerald-500 to-cyan-400 transition-all duration-500"
+              className="h-full bg-accent transition-all duration-500"
               style={{ width: `${progressPct}%` }}
             />
           </div>
@@ -564,7 +566,7 @@ export default function RoutineSection({
                         </button>
                         <button
                           onClick={handleSaveEdit}
-                          className="px-3 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs"
+                          className="px-3.5 py-1 rounded-xl bg-accent hover:opacity-95 text-white font-bold text-xs shadow-xs"
                         >
                           Save
                         </button>
@@ -579,21 +581,21 @@ export default function RoutineSection({
                   key={r.id}
                   className={`group p-3.5 rounded-2xl border transition-all flex items-center justify-between ${
                     r.is_completed_today
-                      ? "bg-zinc-950/40 border-zinc-800/40 opacity-50"
+                      ? "bg-zinc-100/40 dark:bg-zinc-950/40 border-zinc-200 dark:border-zinc-800/40 opacity-50"
                       : isNow
-                        ? "bg-emerald-950/20 border-emerald-500/80 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
-                        : "bg-zinc-900/30 hover:bg-zinc-900/60 border-zinc-800/70"
+                        ? "bg-accent-subtle border-accent"
+                        : "bg-surface-elevated hover:bg-zinc-100/50 dark:hover:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/70"
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0 pr-2">
                     <button
                       onClick={() => onToggle(r.id)}
-                      className="cursor-pointer text-zinc-500 hover:text-emerald-400 transition shrink-0"
+                      className="cursor-pointer text-zinc-400 hover:text-accent transition shrink-0"
                     >
                       {r.is_completed_today ? (
-                        <CheckCircle className="w-5 h-5 text-emerald-400 fill-emerald-950" />
+                        <CheckCircle className="w-5 h-5 text-accent" />
                       ) : (
-                        <Circle className="w-5 h-5 hover:border-emerald-400" />
+                        <Circle className="w-5 h-5 hover:border-accent" />
                       )}
                     </button>
 
