@@ -15,6 +15,8 @@ import {
   setLocal,
   recordUserActivity,
   getStreakStatus,
+  getCodingLogs,
+  computeCodingAnalytics,
 } from "@/lib/storage";
 import { getLocalDateString } from "@/lib/dateUtils";
 
@@ -151,14 +153,14 @@ export const api = {
         method: "PUT",
         body: JSON.stringify(data),
       });
-      const localLogs = getLocal<CodingLog[]>("streakflow_logs", []);
+      const localLogs = getCodingLogs();
       setLocal(
-        "streakflow_logs",
+        STORAGE_KEYS.LOGS,
         localLogs.map((l) => (l.id === id ? item : l)),
       );
       return item;
     } catch {
-      const localLogs = getLocal<CodingLog[]>("streakflow_logs", []);
+      const localLogs = getCodingLogs();
       const existing = localLogs.find((l) => l.id === id);
       const updated: CodingLog = existing
         ? { ...existing, ...data }
@@ -172,7 +174,7 @@ export const api = {
             created_at: new Date().toISOString(),
           } as CodingLog);
       setLocal(
-        "streakflow_logs",
+        STORAGE_KEYS.LOGS,
         localLogs.map((l) => (l.id === id ? updated : l)),
       );
       return updated;
@@ -183,9 +185,9 @@ export const api = {
     try {
       await request<void>(`/coding/logs/${id}`, { method: "DELETE" });
     } catch {}
-    const localLogs = getLocal<CodingLog[]>("streakflow_logs", []);
+    const localLogs = getCodingLogs();
     setLocal(
-      "streakflow_logs",
+      STORAGE_KEYS.LOGS,
       localLogs.filter((l) => l.id !== id),
     );
   },
@@ -193,41 +195,10 @@ export const api = {
   getCodingAnalytics: async (): Promise<CodingAnalytics> => {
     try {
       const data = await request<CodingAnalytics>("/coding/analytics");
-      setLocal("streakflow_analytics", data);
       return data;
     } catch {
-      const logs = getLocal<CodingLog[]>("streakflow_logs", []);
-      const total_solved = logs.length;
-
-      const platMap: Record<string, number> = {};
-      const diffMap: Record<string, number> = { Easy: 0, Medium: 0, Hard: 0 };
-      logs.forEach((l) => {
-        platMap[l.platform] = (platMap[l.platform] || 0) + 1;
-        if (diffMap[l.difficulty] !== undefined) {
-          diffMap[l.difficulty]++;
-        } else {
-          diffMap["Medium"]++;
-        }
-      });
-
-      return {
-        total_solved,
-        platform_breakdown: Object.entries(platMap).map(([p, count]) => ({
-          platform: p,
-          count,
-          color:
-            p === "LeetCode"
-              ? "#f59e0b"
-              : p === "Codeforces"
-                ? "#3b82f6"
-                : "#10b981",
-        })),
-        difficulty_breakdown: [
-          { difficulty: "Easy", count: diffMap["Easy"], color: "#10b981" },
-          { difficulty: "Medium", count: diffMap["Medium"], color: "#f59e0b" },
-          { difficulty: "Hard", count: diffMap["Hard"], color: "#ef4444" },
-        ],
-      };
+      const logs = getCodingLogs();
+      return computeCodingAnalytics(logs);
     }
   },
 
@@ -242,7 +213,7 @@ export const api = {
       }
       const data = await res.json();
 
-      const localLogs = getLocal<CodingLog[]>("streakflow_logs", []);
+      const localLogs = getCodingLogs();
       const existingTitles = new Set(
         localLogs.map((l) => l.problem_title.toLowerCase()),
       );
@@ -300,7 +271,7 @@ export const api = {
         }
       }
 
-      return {
+      const syncResult: CodingSyncResult = {
         platform: "LeetCode",
         handle: username,
         total_solved: data.total_solved,
@@ -311,6 +282,13 @@ export const api = {
         synced_problems_count: syncedCount,
         message: `Synced ${syncedCount} new problem(s) from LeetCode! Total solved: ${data.total_solved}`,
       };
+
+      if (typeof window !== "undefined") {
+        setLocal(STORAGE_KEYS.LC_RESULT, syncResult);
+        setLocal(STORAGE_KEYS.LC_HANDLE, username);
+      }
+
+      return syncResult;
   },
 
   syncCodeforces: async (handle: string): Promise<CodingSyncResult> => {
@@ -324,7 +302,7 @@ export const api = {
       }
       const data = await res.json();
 
-      const localLogs = getLocal<CodingLog[]>(STORAGE_KEYS.LOGS, []);
+      const localLogs = getCodingLogs();
       const existingTitles = new Set(
         localLogs.map((l) => l.problem_title.toLowerCase()),
       );
@@ -366,7 +344,7 @@ export const api = {
         }
       }
 
-      return {
+      const syncResult: CodingSyncResult = {
         platform: "Codeforces",
         handle,
         total_solved: data.total_solved,
@@ -377,6 +355,13 @@ export const api = {
         synced_problems_count: syncedCount,
         message: `Synced ${syncedCount} new problem(s) from Codeforces! Total solved: ${data.total_solved}`,
       };
+
+      if (typeof window !== "undefined") {
+        setLocal(STORAGE_KEYS.CF_RESULT, syncResult);
+        setLocal(STORAGE_KEYS.CF_HANDLE, handle);
+      }
+
+      return syncResult;
   },
 
   // Rule of 3 Focus & Focus Sessions
@@ -597,10 +582,10 @@ export const api = {
   getRoutines: async (): Promise<StudentRoutine[]> => {
     try {
       const data = await request<StudentRoutine[]>("/routines");
-      setLocal("streakflow_routines", data);
+      setLocal(STORAGE_KEYS.ROUTINES, data);
       return data;
     } catch {
-      return getLocal<StudentRoutine[]>("streakflow_routines", []);
+      return getLocal<StudentRoutine[]>(STORAGE_KEYS.ROUTINES, []);
     }
   },
 
@@ -616,11 +601,11 @@ export const api = {
         method: "POST",
         body: JSON.stringify(data),
       });
-      const local = getLocal<StudentRoutine[]>("streakflow_routines", []);
-      setLocal("streakflow_routines", [...local, item]);
+      const local = getLocal<StudentRoutine[]>(STORAGE_KEYS.ROUTINES, []);
+      setLocal(STORAGE_KEYS.ROUTINES, [...local, item]);
       return item;
     } catch {
-      const local = getLocal<StudentRoutine[]>("streakflow_routines", []);
+      const local = getLocal<StudentRoutine[]>(STORAGE_KEYS.ROUTINES, []);
       const newItem: StudentRoutine = {
         id: Date.now(),
         title: data.title,
@@ -631,7 +616,7 @@ export const api = {
         is_completed_today: false,
         created_at: new Date().toISOString(),
       };
-      setLocal("streakflow_routines", [...local, newItem]);
+      setLocal(STORAGE_KEYS.ROUTINES, [...local, newItem]);
       return newItem;
     }
   },
@@ -652,14 +637,14 @@ export const api = {
         method: "PUT",
         body: JSON.stringify(data),
       });
-      const local = getLocal<StudentRoutine[]>("streakflow_routines", []);
+      const local = getLocal<StudentRoutine[]>(STORAGE_KEYS.ROUTINES, []);
       setLocal(
-        "streakflow_routines",
+        STORAGE_KEYS.ROUTINES,
         local.map((r) => (r.id === id ? item : r)),
       );
       return item;
     } catch {
-      const local = getLocal<StudentRoutine[]>("streakflow_routines", []);
+      const local = getLocal<StudentRoutine[]>(STORAGE_KEYS.ROUTINES, []);
       const existing = local.find((r) => r.id === id);
       const updated: StudentRoutine = existing
         ? { ...existing, ...data }
@@ -674,7 +659,7 @@ export const api = {
             created_at: new Date().toISOString(),
           } as StudentRoutine);
       setLocal(
-        "streakflow_routines",
+        STORAGE_KEYS.ROUTINES,
         local.map((r) => (r.id === id ? updated : r)),
       );
       return updated;
@@ -685,9 +670,9 @@ export const api = {
     try {
       await request<void>(`/routines/${id}`, { method: "DELETE" });
     } catch {}
-    const local = getLocal<StudentRoutine[]>("streakflow_routines", []);
+    const local = getLocal<StudentRoutine[]>(STORAGE_KEYS.ROUTINES, []);
     setLocal(
-      "streakflow_routines",
+      STORAGE_KEYS.ROUTINES,
       local.filter((r) => r.id !== id),
     );
   },

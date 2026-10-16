@@ -248,9 +248,54 @@ export default function AchievementsView({
       }
     };
 
+    const handleStorageUpdated = (e: Event) => {
+      const customEvt = e as CustomEvent<{ key?: string }>;
+      const key = customEvt.detail?.key;
+      if (
+        !key ||
+        key === STORAGE_KEYS.LOGS ||
+        key === STORAGE_KEYS.USER_STATS ||
+        key === STORAGE_KEYS.LC_RESULT ||
+        key === STORAGE_KEYS.CF_RESULT
+      ) {
+        loadStatsData();
+        if (typeof window !== "undefined") {
+          const savedLcRes = getLocal<CodingSyncResult | null>(
+            STORAGE_KEYS.LC_RESULT,
+            null,
+          );
+          if (savedLcRes) setLcResult(savedLcRes);
+          const savedCfRes = getLocal<CodingSyncResult | null>(
+            STORAGE_KEYS.CF_RESULT,
+            null,
+          );
+          if (savedCfRes) setCfResult(savedCfRes);
+        }
+      }
+    };
+
+    const handleStatsUpdated = () => {
+      loadStatsData();
+      if (typeof window !== "undefined") {
+        const savedLcRes = getLocal<CodingSyncResult | null>(
+          STORAGE_KEYS.LC_RESULT,
+          null,
+        );
+        if (savedLcRes) setLcResult(savedLcRes);
+        const savedCfRes = getLocal<CodingSyncResult | null>(
+          STORAGE_KEYS.CF_RESULT,
+          null,
+        );
+        if (savedCfRes) setCfResult(savedCfRes);
+      }
+    };
+
     window.addEventListener("focus-session-completed", handleFocusCompleted);
     window.addEventListener("streakflow-data-reset", handleDataReset);
     window.addEventListener("streakflow-handles-updated", handleHandlesUpdated);
+    window.addEventListener("kanso-storage-updated", handleStorageUpdated);
+    window.addEventListener("streakflow-stats-updated", handleStatsUpdated);
+
     return () => {
       window.removeEventListener(
         "focus-session-completed",
@@ -261,9 +306,15 @@ export default function AchievementsView({
         "streakflow-handles-updated",
         handleHandlesUpdated,
       );
+      window.removeEventListener("kanso-storage-updated", handleStorageUpdated);
+      window.removeEventListener("streakflow-stats-updated", handleStatsUpdated);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    loadStatsData();
+  }, [totalSolved, loadStatsData]);
 
   const handleSyncLeetCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -539,29 +590,41 @@ export default function AchievementsView({
       rawBreakdown.find((d) => d.difficulty === "Medium")?.count || 0;
     const hardCount =
       rawBreakdown.find((d) => d.difficulty === "Hard")?.count || 0;
-    const sum = easyCount + mediumCount + hardCount || 1;
+    const classifiedSum = easyCount + mediumCount + hardCount;
+    const sum = classifiedSum > 0 ? classifiedSum : 1;
 
     return [
       {
         difficulty: "Easy",
         count: easyCount,
         color: "#10b981",
-        pct: easyCount > 0 ? Math.round((easyCount / sum) * 100) : 0,
+        pct: classifiedSum > 0 ? Math.round((easyCount / sum) * 100) : 0,
       },
       {
         difficulty: "Medium",
         count: mediumCount,
         color: "#f59e0b",
-        pct: mediumCount > 0 ? Math.round((mediumCount / sum) * 100) : 0,
+        pct: classifiedSum > 0 ? Math.round((mediumCount / sum) * 100) : 0,
       },
       {
         difficulty: "Hard",
         count: hardCount,
         color: "#ef4444",
-        pct: hardCount > 0 ? Math.round((hardCount / sum) * 100) : 0,
+        pct: classifiedSum > 0 ? Math.round((hardCount / sum) * 100) : 0,
       },
     ];
   }, [codingAnalytics]);
+
+  const loggedClassifiedCount = useMemo(() => {
+    return loggedDifficulties.reduce((acc, curr) => acc + curr.count, 0);
+  }, [loggedDifficulties]);
+
+  const loggedUnclassifiedCount = useMemo(() => {
+    if (codingAnalytics?.unclassified_count !== undefined) {
+      return codingAnalytics.unclassified_count;
+    }
+    return Math.max(0, loggedTotal - loggedClassifiedCount);
+  }, [codingAnalytics, loggedTotal, loggedClassifiedCount]);
 
   const loggedPlatforms = useMemo(() => {
     const pb = codingAnalytics?.platform_breakdown || [];
@@ -570,22 +633,23 @@ export default function AchievementsView({
     const others = pb
       .filter((p) => p.platform !== "LeetCode" && p.platform !== "Codeforces")
       .reduce((acc, curr) => acc + curr.count, 0);
-    const sum = lc + cf + others || 1;
+    const total = codingAnalytics?.total_solved ?? (lc + cf + others);
+    const sum = total > 0 ? total : 1;
 
     return {
       leetcode: {
         count: lc,
-        pct: lc > 0 ? Math.round((lc / sum) * 100) : 0,
+        pct: total > 0 ? Math.round((lc / sum) * 100) : 0,
       },
       codeforces: {
         count: cf,
-        pct: cf > 0 ? Math.round((cf / sum) * 100) : 0,
+        pct: total > 0 ? Math.round((cf / sum) * 100) : 0,
       },
       others: {
         count: others,
-        pct: others > 0 ? Math.round((others / sum) * 100) : 0,
+        pct: total > 0 ? Math.round((others / sum) * 100) : 0,
       },
-      total: lc + cf + others,
+      total,
     };
   }, [codingAnalytics]);
 
@@ -1102,8 +1166,10 @@ export default function AchievementsView({
                     Difficulty Tiers (Logged Problems)
                   </span>
                   <span className="text-[10px] text-muted-foreground font-mono">
-                    {loggedDifficulties.reduce((a, c) => a + c.count, 0)}{" "}
-                    classified
+                    {loggedClassifiedCount} classified
+                    {loggedUnclassifiedCount > 0
+                      ? ` • ${loggedUnclassifiedCount} unclassified`
+                      : ""}
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">

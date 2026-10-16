@@ -17,6 +17,7 @@ export * from "./migration.ts";
 export * from "./rollover.ts";
 export * from "./streakEngine.ts";
 export * from "./snapshot.ts";
+export * from "./analytics.ts";
 
 /**
  * Generic local storage getter with JSON parse and fallback.

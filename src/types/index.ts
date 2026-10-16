@@ -93,6 +93,7 @@ export interface CodingAnalytics {
   total_solved: number;
   platform_breakdown: PlatformStat[];
   difficulty_breakdown: DifficultyStat[];
+  unclassified_count?: number;
 }
 
 export interface CodingSyncResult {
