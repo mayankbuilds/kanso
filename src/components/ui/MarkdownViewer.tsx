@@ -55,7 +55,7 @@ function renderInlineFormatting(text: string, keyPrefix: string): React.ReactNod
       return (
         <code
           key={key}
-          className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-mono text-[11px]"
+          className="px-1.5 py-0.5 rounded bg-surface-muted border border-border-subtle text-foreground font-mono text-[11px]"
         >
           {part.slice(1, -1)}
         </code>
@@ -65,7 +65,7 @@ function renderInlineFormatting(text: string, keyPrefix: string): React.ReactNod
     // 3. Bold: **text**
     if (part.startsWith("**") && part.endsWith("**") && part.length >= 4) {
       return (
-        <strong key={key} className="font-bold text-zinc-900 dark:text-zinc-100">
+        <strong key={key} className="font-bold text-foreground">
           {part.slice(2, -2)}
         </strong>
       );
@@ -77,7 +77,7 @@ function renderInlineFormatting(text: string, keyPrefix: string): React.ReactNod
       (part.startsWith("_") && part.endsWith("_") && part.length >= 2)
     ) {
       return (
-        <em key={key} className="italic text-zinc-700 dark:text-zinc-300">
+        <em key={key} className="italic text-foreground/90">
           {part.slice(1, -1)}
         </em>
       );
@@ -103,17 +103,17 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
   };
 
   return (
-    <div className="my-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 overflow-hidden text-xs">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-zinc-200/60 dark:bg-zinc-900/80 border-b border-zinc-200 dark:border-zinc-800 text-[10px] text-zinc-500 font-mono">
+    <div className="my-2 rounded-xl border border-border-subtle bg-surface-muted overflow-hidden text-xs">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-surface border-b border-border-subtle text-[10px] text-muted-foreground font-mono">
         <span>{language || "code"}</span>
         <button
           onClick={handleCopy}
           type="button"
-          className="flex items-center gap-1 hover:text-zinc-800 dark:hover:text-zinc-200 transition cursor-pointer"
+          className="flex items-center gap-1 hover:text-foreground transition cursor-pointer"
         >
           {copied ? (
             <>
-              <Check className="w-3 h-3 text-emerald-500" />
+              <Check className="w-3 h-3 text-accent" />
               <span>Copied</span>
             </>
           ) : (
@@ -124,7 +124,7 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
           )}
         </button>
       </div>
-      <pre className="p-3 overflow-x-auto text-zinc-800 dark:text-zinc-200 font-mono text-[11px] leading-relaxed">
+      <pre className="p-3 overflow-x-auto text-foreground font-mono text-[11px] leading-relaxed">
         <code>{code}</code>
       </pre>
     </div>
@@ -138,7 +138,7 @@ export default function MarkdownViewer({
 }: MarkdownViewerProps) {
   if (!content.trim()) {
     return (
-      <div className={`text-zinc-400 italic text-xs ${className}`}>
+      <div className={`text-muted-foreground italic text-xs ${className}`}>
         Empty note
       </div>
     );
@@ -187,7 +187,7 @@ export default function MarkdownViewer({
       renderedElements.push(
         <hr
           key={`hr-${i}`}
-          className="border-zinc-200 dark:border-zinc-800 my-2.5"
+          className="border-border-subtle my-2.5"
         />
       );
       continue;
@@ -198,7 +198,7 @@ export default function MarkdownViewer({
       renderedElements.push(
         <h3
           key={`h3-${i}`}
-          className="text-xs font-bold text-zinc-900 dark:text-zinc-100 mt-2 mb-1"
+          className="text-xs font-bold text-foreground mt-2 mb-1"
         >
           {renderInlineFormatting(trimmed.slice(4), `h3-${i}`)}
         </h3>
@@ -209,7 +209,7 @@ export default function MarkdownViewer({
       renderedElements.push(
         <h2
           key={`h2-${i}`}
-          className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mt-2.5 mb-1"
+          className="text-sm font-bold text-foreground mt-2.5 mb-1"
         >
           {renderInlineFormatting(trimmed.slice(3), `h2-${i}`)}
         </h2>
@@ -220,7 +220,7 @@ export default function MarkdownViewer({
       renderedElements.push(
         <h1
           key={`h1-${i}`}
-          className="text-base font-bold text-zinc-900 dark:text-zinc-100 mt-3 mb-1"
+          className="text-base font-bold text-foreground mt-3 mb-1"
         >
           {renderInlineFormatting(trimmed.slice(2), `h1-${i}`)}
         </h1>
@@ -233,7 +233,7 @@ export default function MarkdownViewer({
       renderedElements.push(
         <blockquote
           key={`quote-${i}`}
-          className="border-l-2 border-accent pl-3 text-xs italic text-zinc-600 dark:text-zinc-400 my-1.5"
+          className="border-l-2 border-accent pl-3 text-xs italic text-muted-foreground my-1.5"
         >
           {renderInlineFormatting(trimmed.slice(2), `quote-${i}`)}
         </blockquote>
@@ -264,14 +264,14 @@ export default function MarkdownViewer({
             {isChecked ? (
               <CheckSquare className="w-3.5 h-3.5 text-accent" />
             ) : (
-              <Square className="w-3.5 h-3.5 text-zinc-400 hover:text-accent" />
+              <Square className="w-3.5 h-3.5 text-muted-foreground hover:text-accent" />
             )}
           </button>
           <span
             className={`${
               isChecked
-                ? "line-through text-zinc-400 dark:text-zinc-500"
-                : "text-zinc-800 dark:text-zinc-200"
+                ? "line-through text-muted-foreground"
+                : "text-foreground"
             }`}
           >
             {renderInlineFormatting(itemText, `task-text-${i}`)}
@@ -286,7 +286,7 @@ export default function MarkdownViewer({
       renderedElements.push(
         <div key={`bullet-${i}`} className="flex items-start gap-2 text-xs my-0.5 ml-2">
           <span className="text-accent font-bold mt-0.5">•</span>
-          <span className="text-zinc-700 dark:text-zinc-300">
+          <span className="text-foreground/90">
             {renderInlineFormatting(trimmed.slice(2), `bullet-text-${i}`)}
           </span>
         </div>
@@ -299,10 +299,10 @@ export default function MarkdownViewer({
     if (numMatch) {
       renderedElements.push(
         <div key={`num-${i}`} className="flex items-start gap-2 text-xs my-0.5 ml-2">
-          <span className="font-mono text-zinc-400 text-[11px] shrink-0 mt-0.5">
+          <span className="font-mono text-muted-foreground text-[11px] shrink-0 mt-0.5">
             {numMatch[1]}.
           </span>
-          <span className="text-zinc-700 dark:text-zinc-300">
+          <span className="text-foreground/90">
             {renderInlineFormatting(numMatch[2], `num-text-${i}`)}
           </span>
         </div>
@@ -320,7 +320,7 @@ export default function MarkdownViewer({
     renderedElements.push(
       <p
         key={`p-${i}`}
-        className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed my-0.5"
+        className="text-xs text-foreground/90 leading-relaxed my-0.5"
       >
         {renderInlineFormatting(rawLine, `p-text-${i}`)}
       </p>

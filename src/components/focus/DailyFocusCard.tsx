@@ -66,10 +66,10 @@ export default function DailyFocusCard({
     <div
       className={`p-3.5 rounded-xl border transition-all ${
         item?.is_completed
-          ? "bg-zinc-50 dark:bg-zinc-950/40 border-zinc-200 dark:border-zinc-800 text-zinc-400"
+          ? "bg-surface-muted border-border-subtle text-muted-foreground"
           : item
-            ? "bg-white dark:bg-zinc-900/90 border-zinc-200 dark:border-zinc-700/80 text-zinc-900 dark:text-zinc-100 shadow-xs"
-            : "bg-zinc-50/50 dark:bg-zinc-950/30 border-dashed border-zinc-300 dark:border-zinc-800 text-zinc-500 hover:border-zinc-400 dark:hover:border-zinc-700"
+            ? "bg-surface border-border-subtle text-foreground shadow-xs"
+            : "bg-surface-muted/50 border-dashed border-border-subtle text-muted-foreground hover:border-border-strong"
       }`}
     >
       <div className="flex items-center gap-3">
@@ -84,8 +84,8 @@ export default function DailyFocusCard({
             <span
               className={`text-xs font-mono font-medium truncate ${
                 item.is_completed
-                  ? "line-through text-zinc-400 dark:text-zinc-500"
-                  : "text-zinc-800 dark:text-zinc-200"
+                  ? "line-through text-muted-foreground"
+                  : "text-foreground"
               }`}
             >
               {item.title}
@@ -98,7 +98,7 @@ export default function DailyFocusCard({
                   setInputValue(item.title);
                   setIsEditing(true);
                 }}
-                className="p-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-surface-hover transition cursor-pointer"
                 title="Edit task"
               >
                 <Edit2 className="w-3.5 h-3.5" />
@@ -108,7 +108,7 @@ export default function DailyFocusCard({
                 type="button"
                 onClick={handleDelete}
                 disabled={loading}
-                className="p-1.5 text-zinc-400 hover:text-rose-500 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                className="p-1.5 text-muted-foreground hover:text-rose-500 rounded-lg hover:bg-surface-hover transition cursor-pointer"
                 title="Clear slot"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -121,7 +121,7 @@ export default function DailyFocusCard({
                 className={`p-1.5 rounded-lg border transition cursor-pointer ${
                   item.is_completed
                     ? "bg-accent-subtle border-accent text-accent"
-                    : "bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white"
+                    : "bg-surface-muted border-border-subtle text-muted-foreground hover:bg-surface-hover hover:text-foreground"
                 }`}
                 title={item.is_completed ? "Mark incomplete" : "Mark completed"}
               >
@@ -145,13 +145,13 @@ export default function DailyFocusCard({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               disabled={loading}
-              className="flex-1 bg-transparent text-xs text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-hidden font-mono"
+              className="flex-1 bg-transparent text-xs text-foreground placeholder-subtle-foreground focus:outline-hidden font-mono"
               autoFocus={isEditing}
             />
             <button
               type="submit"
               disabled={loading || !inputValue.trim()}
-              className="bg-accent hover:opacity-95 disabled:opacity-40 text-white px-2.5 py-1 text-xs rounded-lg font-mono transition flex items-center gap-1 cursor-pointer"
+              className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-accent-foreground px-2.5 py-1 text-xs rounded-lg font-mono transition flex items-center gap-1 cursor-pointer"
             >
               {loading ? (
                 <Loader2 className="w-3 h-3 animate-spin" />
@@ -167,7 +167,7 @@ export default function DailyFocusCard({
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="text-xs text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 px-1 cursor-pointer"
+                className="text-xs text-muted-foreground hover:text-foreground px-1 cursor-pointer"
               >
                 Cancel
               </button>

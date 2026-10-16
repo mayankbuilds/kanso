@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { Flame, Timer } from "lucide-react";
 import { useEffect, useState } from "react";
 import { UserStats } from "@/types";
-import { applyTheme, getInitialTheme, AccentColor, ThemeMode } from "@/lib/theme";
+import { applyTheme, getInitialTheme } from "@/lib/theme";
 
 interface HeaderProps {
   stats: UserStats | null;
@@ -26,20 +27,6 @@ export default function Header({
     setMounted(true);
     const init = getInitialTheme();
     applyTheme(init.mode, init.accent);
-
-    const handler = (e: Event) => {
-      const custom = e as CustomEvent<{ mode?: ThemeMode; accent?: AccentColor }>;
-      if (custom.detail) {
-        const cur = getInitialTheme();
-        applyTheme(custom.detail.mode || cur.mode, custom.detail.accent || cur.accent);
-      }
-    };
-    window.addEventListener("kanso-theme-changed", handler);
-    window.addEventListener("streakflow-theme-changed", handler);
-    return () => {
-      window.removeEventListener("kanso-theme-changed", handler);
-      window.removeEventListener("streakflow-theme-changed", handler);
-    };
   }, []);
 
   const xp = stats?.xp ?? 100;
@@ -54,17 +41,24 @@ export default function Header({
   };
 
   return (
-    <header className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-8 border-b border-zinc-200 dark:border-zinc-800 gap-4 transition-colors">
+    <header className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-8 border-b border-border-subtle gap-4 transition-colors">
       <div>
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-accent text-white flex items-center justify-center font-bold text-sm tracking-tight shadow-xs">
-            K
+          <div className="w-9 h-9 rounded-xl overflow-hidden border border-border-subtle bg-surface shadow-xs shrink-0 flex items-center justify-center">
+            <Image
+              src="/apple-touch-icon.png"
+              alt="Kanso Emblem"
+              width={36}
+              height={36}
+              priority
+              className="w-full h-full object-cover"
+            />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            <h1 className="text-xl font-bold tracking-tight text-foreground">
               Kanso
             </h1>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-muted-foreground">
               Daily Focus • Practice Arena • Mindful Progress
             </p>
           </div>
@@ -72,17 +66,17 @@ export default function Header({
       </div>
 
       {/* Understated Gamification & Stats Widget */}
-      <div className="flex items-center gap-2.5 self-start sm:self-auto bg-white/70 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 p-2 rounded-2xl shadow-xs backdrop-blur-xs">
+      <div className="flex items-center gap-2.5 self-start sm:self-auto bg-surface border border-border-subtle p-2 rounded-2xl shadow-xs">
         {/* Level & XP */}
-        <div className="flex items-center gap-2 px-2.5 py-1 pr-3 border-r border-zinc-200 dark:border-zinc-800">
-          <div className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-mono font-semibold text-zinc-800 dark:text-zinc-200 text-xs">
+        <div className="flex items-center gap-2 px-2.5 py-1 pr-3 border-r border-border-subtle">
+          <div className="px-2 py-0.5 rounded-md bg-surface-muted border border-border-subtle font-mono font-semibold text-foreground text-xs">
             L{level}
           </div>
           <div>
-            <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+            <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-muted-foreground">
               <span>{xp % 300}/300 XP</span>
             </div>
-            <div className="w-20 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden mt-0.5">
+            <div className="w-20 h-1.5 bg-surface-muted rounded-full overflow-hidden mt-0.5">
               <div
                 className="h-full bg-accent transition-all duration-500 rounded-full"
                 style={{ width: `${progressInLevel}%` }}
@@ -92,7 +86,7 @@ export default function Header({
         </div>
 
         {/* Streak Milestone */}
-        <div className="flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-zinc-700 dark:text-zinc-300">
+        <div className="flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 bg-surface-muted border border-border-subtle rounded-xl text-foreground">
           <Flame className="w-3.5 h-3.5 text-accent" />
           <span className="font-semibold">{streakDays}d Streak</span>
         </div>
@@ -105,7 +99,7 @@ export default function Header({
             className={`flex items-center gap-2 text-xs font-mono px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
               timerInfo?.isRunning
                 ? "bg-accent-subtle border-accent text-accent font-semibold"
-                : "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+                : "bg-transparent hover:bg-surface-hover border-border-subtle text-muted-foreground hover:text-foreground"
             }`}
             title="Open Focus Timer (F)"
           >

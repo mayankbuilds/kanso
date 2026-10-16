@@ -264,7 +264,7 @@ export default function Home() {
       />
 
       {/* Desktop Navigation Tabs */}
-      <div className="hidden md:flex items-center gap-2 mb-8 border-b border-zinc-200 dark:border-zinc-800 pb-3 overflow-x-auto scrollbar-none">
+      <div className="hidden md:flex items-center gap-2 mb-8 border-b border-border-subtle pb-3 overflow-x-auto scrollbar-none">
         {[
           { id: "arena", label: "Arena", icon: Terminal },
           { id: "focus", label: "Focus", icon: Timer },
@@ -280,8 +280,8 @@ export default function Home() {
               onClick={() => setActiveTab(t.id as NavTab)}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono transition cursor-pointer whitespace-nowrap ${
                 isActive
-                  ? "bg-zinc-200/70 dark:bg-zinc-800 text-accent font-bold border border-zinc-300 dark:border-zinc-700 shadow-xs"
-                  : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                  ? "bg-surface-elevated text-accent font-bold border border-border-subtle shadow-xs"
+                  : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -334,26 +334,26 @@ export default function Home() {
           />
 
           {activeTab === "focus" && (
-            <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-5 font-mono text-xs text-zinc-600 dark:text-zinc-400 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
+            <div className="bg-surface border border-border-subtle rounded-2xl p-5 font-mono text-xs text-muted-foreground flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-accent-subtle border border-accent text-accent rounded-xl shrink-0">
                   <Timer className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="text-zinc-800 dark:text-zinc-200 font-bold block">
+                  <span className="text-foreground font-bold block">
                     Deep Work Flow State & Focus Audio
                   </span>
-                  <span className="text-[11px] text-zinc-500">
+                  <span className="text-[11px] text-subtle-foreground">
                     Use{" "}
-                    <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-zinc-700 dark:text-zinc-300">
+                    <kbd className="px-1.5 py-0.5 bg-surface-muted border border-border-subtle rounded text-foreground">
                       Space
                     </kbd>{" "}
                     to toggle,{" "}
-                    <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-zinc-700 dark:text-zinc-300">
+                    <kbd className="px-1.5 py-0.5 bg-surface-muted border border-border-subtle rounded text-foreground">
                       M
                     </kbd>{" "}
                     for Focus Audio, and{" "}
-                    <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-zinc-700 dark:text-zinc-300">
+                    <kbd className="px-1.5 py-0.5 bg-surface-muted border border-border-subtle rounded text-foreground">
                       F
                     </kbd>{" "}
                     for Zen Fullscreen
@@ -363,7 +363,7 @@ export default function Home() {
 
               <button
                 onClick={() => setIsPomodoroFullscreen(true)}
-                className="px-4 py-2 bg-accent hover:opacity-95 text-white font-bold rounded-xl transition cursor-pointer shrink-0 shadow-xs"
+                className="px-4 py-2 bg-accent hover:bg-accent-hover text-accent-foreground font-bold rounded-xl transition cursor-pointer shrink-0 shadow-xs"
               >
                 Zen Fullscreen
               </button>
@@ -378,7 +378,7 @@ export default function Home() {
           }
         >
           {/* Plan Hub Shared Date Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-surface-elevated border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xs font-mono">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-surface-elevated border border-border-subtle rounded-2xl shadow-xs font-mono">
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -387,7 +387,7 @@ export default function Home() {
                   d.setDate(d.getDate() - 1);
                   setSelectedDate(getLocalDateString(d));
                 }}
-                className="p-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer"
+                className="p-1.5 rounded-xl hover:bg-surface-hover text-muted-foreground hover:text-foreground transition cursor-pointer"
                 title="Previous Day"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -395,10 +395,10 @@ export default function Home() {
 
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-accent" />
-                <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                <span className="text-sm font-bold text-foreground">
                   {formatDisplayDate(selectedDate)}
                 </span>
-                <span className="text-xs text-zinc-500 font-mono">
+                <span className="text-xs text-subtle-foreground font-mono">
                   ({selectedDate})
                 </span>
               </div>
@@ -410,7 +410,7 @@ export default function Home() {
                   d.setDate(d.getDate() + 1);
                   setSelectedDate(getLocalDateString(d));
                 }}
-                className="p-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer"
+                className="p-1.5 rounded-xl hover:bg-surface-hover text-muted-foreground hover:text-foreground transition cursor-pointer"
                 title="Next Day"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -422,7 +422,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setSelectedDate(getLocalDateString())}
-                  className="px-2.5 py-1 text-xs rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
+                  className="px-2.5 py-1 text-xs rounded-lg bg-surface-muted hover:bg-surface-hover text-muted-foreground hover:text-foreground transition cursor-pointer"
                 >
                   Today
                 </button>

@@ -549,7 +549,7 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
                 <button
                   onClick={handleSyncToDrive}
                   disabled={syncing}
-                  className="flex-1 bg-accent hover:opacity-90 disabled:opacity-50 text-white dark:text-zinc-950 text-xs font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                  className="flex-1 bg-accent hover:bg-accent-hover disabled:opacity-50 text-accent-foreground text-xs font-medium py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                 >
                   <RefreshCw
                     className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`}
@@ -584,11 +584,11 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
             {!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
               <div className="text-[11px] text-amber-400/90 bg-amber-950/30 border border-amber-800/40 p-2.5 rounded-xl">
                 Google OAuth Client ID is not configured in{" "}
-                <code className="bg-zinc-900 px-1 py-0.5 rounded text-zinc-300">
+                <code className="bg-surface px-1 py-0.5 rounded text-foreground border border-border-subtle font-mono">
                   .env.local
                 </code>
                 . Set{" "}
-                <code className="bg-zinc-900 px-1 py-0.5 rounded text-zinc-300">
+                <code className="bg-surface px-1 py-0.5 rounded text-foreground border border-border-subtle font-mono">
                   NEXT_PUBLIC_GOOGLE_CLIENT_ID
                 </code>{" "}
                 to enable Drive sync.
@@ -823,7 +823,7 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
                   type="button"
                   onClick={handleConfirmRestore}
                   disabled={isRestoring}
-                  className="flex-1 py-2.5 px-4 bg-accent hover:opacity-90 text-white dark:text-zinc-950 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-2 shadow-xs"
+                  className="flex-1 py-2.5 px-4 bg-accent hover:bg-accent-hover text-accent-foreground rounded-xl text-xs font-medium transition cursor-pointer flex items-center justify-center gap-2 shadow-xs"
                 >
                   {isRestoring ? (
                     <>
@@ -1065,7 +1065,7 @@ export default function SettingsView({ onResetComplete }: SettingsViewProps) {
 
       {/* SECTION 3: DANGER ZONE (RESET DATA) */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2 pb-2 border-b border-rose-950/70 dark:border-rose-950/70 border-rose-200">
+        <div className="flex items-center gap-2 pb-2 border-b border-rose-500/20">
           <AlertTriangle className="w-4 h-4 text-rose-500" />
           <h3 className="text-xs uppercase tracking-wider text-rose-500 font-bold">
             Danger Zone

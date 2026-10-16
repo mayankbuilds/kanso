@@ -1100,18 +1100,18 @@ export default function PomodoroTimer({
     if (!showMusicMenu) return null;
     return (
       <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in">
-        <div className="w-full max-w-sm bg-zinc-950 border border-zinc-800 rounded-2xl p-5 shadow-2xl space-y-4 font-mono text-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-            <span className="font-bold text-zinc-100 flex items-center gap-2">
-              <Music className="w-4 h-4 text-emerald-400" /> Focus Audio
+        <div className="w-full max-w-sm bg-surface border border-border-subtle rounded-2xl p-5 shadow-2xl space-y-4 font-mono text-xs">
+          <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+            <span className="font-bold text-foreground flex items-center gap-2">
+              <Music className="w-4 h-4 text-accent" /> Focus Audio
             </span>
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleMusic}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
                   musicPlaying
-                    ? "bg-rose-950 text-rose-300 border border-rose-800 hover:bg-rose-900"
-                    : "bg-emerald-500 text-black hover:bg-emerald-400"
+                    ? "bg-rose-500/10 text-rose-500 border border-rose-500/30 hover:bg-rose-500/20"
+                    : "bg-accent text-accent-foreground hover:bg-accent-hover font-medium"
                 }`}
               >
                 {musicPlaying ? (
@@ -1126,7 +1126,7 @@ export default function PomodoroTimer({
               </button>
               <button
                 onClick={() => setShowMusicMenu(false)}
-                className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
+                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-hover transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1134,9 +1134,9 @@ export default function PomodoroTimer({
           </div>
 
           {audioStatusMsg && (
-            <div className="text-[11px] px-2.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center gap-1.5 text-zinc-300">
+            <div className="text-[11px] px-2.5 py-1.5 rounded-lg bg-surface-muted border border-border-subtle flex items-center gap-1.5 text-foreground">
               <Radio
-                className={`w-3 h-3 ${musicPlaying ? "text-emerald-400 animate-pulse" : "text-zinc-500"}`}
+                className={`w-3 h-3 ${musicPlaying ? "text-accent animate-pulse" : "text-muted-foreground"}`}
               />
               <span className="truncate">{audioStatusMsg}</span>
             </div>
@@ -1144,9 +1144,9 @@ export default function PomodoroTimer({
 
           {/* Volume Slider */}
           <div>
-            <div className="flex items-center justify-between text-[11px] text-zinc-400 mb-1.5">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
               <span>Volume</span>
-              <span className="text-emerald-400 font-bold">
+              <span className="text-accent font-medium font-mono">
                 {Math.round(musicVolume * 100)}%
               </span>
             </div>
@@ -1157,13 +1157,13 @@ export default function PomodoroTimer({
               step="0.05"
               value={musicVolume}
               onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
-              className="w-full accent-emerald-400 cursor-pointer"
+              className="w-full accent-accent cursor-pointer"
             />
           </div>
 
           {/* Presets */}
           <div className="space-y-1.5">
-            <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-bold">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider block font-bold">
               Curated Streams & Offline Audio
             </span>
             {MUSIC_PRESETS.map((p) => (
@@ -1174,22 +1174,21 @@ export default function PomodoroTimer({
                   !useCustomMusic &&
                   selectedMusicPreset === p.id &&
                   musicPlaying
-                    ? "bg-emerald-950/60 border border-emerald-800 text-emerald-400 font-bold"
-                    : "bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800/80 text-zinc-300"
+                    ? "bg-accent-subtle border border-accent/40 text-accent font-semibold"
+                    : "bg-surface-muted hover:bg-surface-hover border border-border-subtle text-foreground"
                 }`}
               >
                 <span>{p.name}</span>
-                <span className="text-[10px] text-zinc-500 font-normal">
+                <span className="text-[10px] text-muted-foreground font-normal">
                   {p.tag}
                 </span>
               </button>
             ))}
           </div>
 
-          {/* Custom Audio Stream URL */}
           {/* Custom Audio Stream & YouTube URL */}
-          <div className="pt-3 border-t border-zinc-800/80 space-y-2">
-            <span className="text-[10px] text-zinc-400 uppercase tracking-wider block font-bold">
+          <div className="pt-3 border-t border-border-subtle space-y-2">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider block font-bold">
               Direct Audio or YouTube Stream URL
             </span>
             <div className="flex gap-2">
@@ -1198,12 +1197,12 @@ export default function PomodoroTimer({
                 placeholder="Paste YouTube link or .mp3 / icecast URL..."
                 value={customMusicUrl}
                 onChange={(e) => setCustomMusicUrl(e.target.value)}
-                className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-2.5 py-1.5 text-zinc-200 text-xs focus:outline-none focus:border-emerald-500"
+                className="flex-1 bg-surface-muted border border-border-subtle rounded-xl px-2.5 py-1.5 text-foreground text-xs focus:outline-none focus:border-accent"
               />
               <button
                 type="button"
                 onClick={() => handleSetCustomUrl(customMusicUrl)}
-                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-black rounded-xl text-xs font-bold transition cursor-pointer"
+                className="px-3 py-1.5 bg-accent hover:bg-accent-hover text-accent-foreground rounded-xl text-xs font-medium transition cursor-pointer"
               >
                 Play
               </button>
@@ -1212,7 +1211,7 @@ export default function PomodoroTimer({
             {/* Last 3 Stream URLs Record */}
             {recentMusicUrls.length > 0 && (
               <div className="space-y-1.5 pt-1">
-                <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-bold">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider block font-bold">
                   Recent Stream URLs (Last 3)
                 </span>
                 <div className="flex flex-col gap-1.5">
@@ -1229,14 +1228,14 @@ export default function PomodoroTimer({
                           setCustomMusicUrl(url);
                           handleSetCustomUrl(url);
                         }}
-                        className="w-full text-left px-2.5 py-1.5 rounded-lg bg-zinc-900/70 hover:bg-zinc-800 text-[11px] text-zinc-300 border border-zinc-800 flex items-center justify-between gap-2 transition cursor-pointer"
+                        className="w-full text-left px-2.5 py-1.5 rounded-lg bg-surface-muted hover:bg-surface-hover text-[11px] text-foreground border border-border-subtle flex items-center justify-between gap-2 transition cursor-pointer"
                         title={url}
                       >
                         <span className="truncate flex items-center gap-1.5">
-                          <Play className="w-3 h-3 text-emerald-400 shrink-0" />
+                          <Play className="w-3 h-3 text-accent shrink-0" />
                           <span className="truncate">{label}</span>
                         </span>
-                        <span className="text-[9px] text-zinc-500 shrink-0 font-mono uppercase">
+                        <span className="text-[9px] text-muted-foreground shrink-0 font-mono uppercase">
                           {ytId ? "YouTube" : "Audio"}
                         </span>
                       </button>
@@ -1247,19 +1246,19 @@ export default function PomodoroTimer({
             )}
 
             {activeYtId && musicPlaying && (
-              <div className="mt-2 p-2.5 rounded-xl border border-emerald-800/60 bg-emerald-950/40 text-emerald-300 flex items-center justify-between text-xs">
-                <span className="flex items-center gap-1.5 font-bold text-[11px]">
-                  <Radio className="w-3.5 h-3.5 animate-pulse text-emerald-400" />{" "}
+              <div className="mt-2 p-2.5 rounded-xl border border-accent/40 bg-accent-subtle text-accent flex items-center justify-between text-xs">
+                <span className="flex items-center gap-1.5 font-semibold text-[11px]">
+                  <Radio className="w-3.5 h-3.5 animate-pulse text-accent" />{" "}
                   YouTube Audio Active
                 </span>
-                <span className="text-[10px] text-zinc-400 font-normal">
+                <span className="text-[10px] text-muted-foreground font-normal">
                   Plays in background
                 </span>
               </div>
             )}
 
             {useCustomMusic && customMusicUrl && !activeYtId && (
-              <span className="text-[10px] text-emerald-400 flex items-center gap-1">
+              <span className="text-[10px] text-accent flex items-center gap-1 font-medium">
                 ✓ Playing direct stream (saved)
               </span>
             )}
@@ -1276,23 +1275,23 @@ export default function PomodoroTimer({
       <div className="fixed inset-0 z-[125] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in">
         <form
           onSubmit={handleApplyCustomMinutes}
-          className="w-full max-w-xs bg-zinc-950 border border-zinc-800 rounded-2xl p-5 shadow-2xl space-y-4 font-mono text-xs"
+          className="w-full max-w-xs bg-surface border border-border-subtle rounded-2xl p-5 shadow-2xl space-y-4 font-mono text-xs"
         >
-          <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
-            <span className="font-bold text-zinc-100 flex items-center gap-1.5">
-              <Sliders className="w-4 h-4 text-emerald-400" /> Custom Sprint
+          <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+            <span className="font-bold text-foreground flex items-center gap-1.5">
+              <Sliders className="w-4 h-4 text-accent" /> Custom Sprint
               Time
             </span>
             <button
               type="button"
               onClick={() => setShowCustomMinsInput(false)}
-              className="text-zinc-500 hover:text-white"
+              className="text-muted-foreground hover:text-foreground"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
           <div>
-            <label className="text-[11px] text-zinc-400 block mb-1">
+            <label className="text-[11px] text-muted-foreground block mb-1">
               Sprint Duration (in minutes, 1 - 180):
             </label>
             <input
@@ -1301,7 +1300,7 @@ export default function PomodoroTimer({
               max="180"
               value={customMinsInputValue}
               onChange={(e) => setCustomMinsInputValue(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2 text-white text-base font-bold outline-none focus:border-emerald-500"
+              className="w-full bg-surface-muted border border-border-subtle rounded-xl p-2 text-foreground text-base font-bold outline-none focus:border-accent"
               autoFocus
             />
           </div>
@@ -1311,7 +1310,7 @@ export default function PomodoroTimer({
                 key={m}
                 type="button"
                 onClick={() => setCustomMinsInputValue(m.toString())}
-                className="py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white text-[11px]"
+                className="py-1 rounded-lg bg-surface-muted border border-border-subtle text-muted-foreground hover:text-foreground text-[11px]"
               >
                 {m}m
               </button>
@@ -1319,7 +1318,7 @@ export default function PomodoroTimer({
           </div>
           <button
             type="submit"
-            className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition cursor-pointer"
+            className="w-full py-2.5 bg-accent hover:bg-accent-hover text-accent-foreground font-medium rounded-xl transition cursor-pointer"
           >
             Apply Sprint Time
           </button>
@@ -1350,14 +1349,14 @@ export default function PomodoroTimer({
 
         {/* Persistent YouTube Stream Status Pill */}
         {activeYtId && musicPlaying && !showMusicMenu && (
-          <div className="fixed bottom-20 sm:bottom-6 right-4 z-50 bg-zinc-950/95 border border-zinc-800 p-2.5 rounded-2xl shadow-2xl flex items-center gap-3 font-mono text-xs backdrop-blur-md animate-in fade-in">
+          <div className="fixed bottom-20 sm:bottom-6 right-4 z-50 bg-surface/95 border border-border-subtle p-2.5 rounded-2xl shadow-2xl flex items-center gap-3 font-mono text-xs backdrop-blur-md animate-in fade-in">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span className="w-2 h-2 rounded-full bg-accent animate-ping" />
               <div className="flex flex-col">
-                <span className="text-[11px] font-bold text-zinc-200 flex items-center gap-1">
-                  <Radio className="w-3 h-3 text-emerald-400" /> YouTube Stream
+                <span className="text-[11px] font-bold text-foreground flex items-center gap-1">
+                  <Radio className="w-3 h-3 text-accent" /> YouTube Stream
                 </span>
-                <span className="text-[9px] text-zinc-500 max-w-[100px] truncate">
+                <span className="text-[9px] text-muted-foreground max-w-[100px] truncate">
                   {activeYtId}
                 </span>
               </div>
@@ -1366,14 +1365,14 @@ export default function PomodoroTimer({
             <button
               type="button"
               onClick={toggleMusic}
-              className="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-[10px] font-bold transition cursor-pointer"
+              className="px-2.5 py-1 rounded-lg bg-surface-muted hover:bg-surface-hover text-foreground text-[10px] font-bold transition cursor-pointer"
             >
               {musicPlaying ? "Pause" : "Play"}
             </button>
             <button
               type="button"
               onClick={stopYouTubeAudio}
-              className="p-1 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
+              className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-hover transition cursor-pointer"
               title="Stop YouTube Stream"
             >
               <X className="w-3.5 h-3.5" />
@@ -1418,7 +1417,7 @@ export default function PomodoroTimer({
                   isRunning ? "animate-pulse" : ""
                 } bg-accent`}
               />
-              <span className="font-mono text-xs sm:text-sm font-semibold tracking-wider uppercase text-zinc-300">
+              <span className="font-mono text-xs sm:text-sm font-semibold tracking-wider uppercase text-foreground">
                 {mode === "focus"
                   ? `Focus (${customFocusMins}m)`
                   : mode === "short_break"
@@ -1427,7 +1426,7 @@ export default function PomodoroTimer({
               </span>
 
               {completedSessions > 0 && (
-                <span className="hidden sm:flex items-center gap-1 font-mono text-xs bg-zinc-800/80 border border-zinc-700/80 text-zinc-300 px-2 py-0.5 rounded-md">
+                <span className="hidden sm:flex items-center gap-1 font-mono text-xs bg-surface-muted border border-border-subtle text-foreground px-2 py-0.5 rounded-md">
                   <Flame className="w-3 h-3 text-accent" />
                   {completedSessions}{" "}
                   {completedSessions === 1 ? "Session" : "Sessions"}
@@ -1441,7 +1440,7 @@ export default function PomodoroTimer({
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-mono transition cursor-pointer ${
                   musicPlaying
                     ? "bg-accent-subtle border-accent text-accent font-semibold"
-                    : "bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-zinc-200"
+                    : "bg-surface-muted border-border-subtle text-muted-foreground hover:text-foreground"
                 }`}
                 title="Focus Audio (M)"
               >
@@ -1458,9 +1457,9 @@ export default function PomodoroTimer({
                 className={`p-2.5 rounded-xl border transition cursor-pointer ${
                   musicPlaying
                     ? musicVolume === 0
-                      ? "bg-rose-950/60 border-rose-800 text-rose-400"
-                      : "bg-emerald-950/60 border-emerald-800 text-emerald-400"
-                    : "bg-zinc-900/80 hover:bg-zinc-800 border-zinc-800 text-zinc-400 hover:text-zinc-200"
+                      ? "bg-rose-500/10 border-rose-500/30 text-rose-500"
+                      : "bg-accent-subtle border-accent-border text-accent"
+                    : "bg-surface-muted hover:bg-surface-hover border-border-subtle text-muted-foreground hover:text-foreground"
                 }`}
                 title={
                   musicPlaying
@@ -1474,9 +1473,9 @@ export default function PomodoroTimer({
               >
                 {musicPlaying ? (
                   musicVolume === 0 ? (
-                    <VolumeX className="w-4 h-4 text-rose-400" />
+                    <VolumeX className="w-4 h-4 text-rose-500" />
                   ) : (
-                    <Volume2 className="w-4 h-4 text-emerald-400" />
+                    <Volume2 className="w-4 h-4 text-accent" />
                   )
                 ) : soundEnabled ? (
                   <Volume2 className="w-4 h-4" />
@@ -1487,12 +1486,12 @@ export default function PomodoroTimer({
 
               <button
                 onClick={exitFullscreen}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white font-mono text-xs transition cursor-pointer"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-surface-muted hover:bg-surface-hover border border-border-subtle text-foreground font-mono text-xs transition cursor-pointer"
                 title="Exit Fullscreen (ESC)"
               >
-                <Minimize2 className="w-4 h-4 text-emerald-400" />
+                <Minimize2 className="w-4 h-4 text-muted-foreground" />
                 <span className="hidden sm:inline">Exit</span>
-                <kbd className="hidden md:inline px-1.5 py-0.5 text-[10px] bg-zinc-800 rounded border border-zinc-700 text-zinc-400">
+                <kbd className="hidden md:inline px-1.5 py-0.5 text-[10px] bg-surface border border-border-subtle rounded text-muted-foreground">
                   ESC
                 </kbd>
               </button>
@@ -1503,7 +1502,7 @@ export default function PomodoroTimer({
           <div className="relative z-10 flex flex-col items-center justify-center my-auto w-full max-w-4xl mx-auto text-center px-2">
             {/* Mode Switcher */}
             <div
-              className={`grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2 mb-6 sm:mb-10 bg-zinc-950/80 p-2 sm:p-1.5 rounded-2xl border border-zinc-800 w-full max-w-xs sm:max-w-none transition-all duration-700 ${
+              className={`grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2 mb-6 sm:mb-10 bg-surface-muted p-2 sm:p-1.5 rounded-2xl border border-border-subtle w-full max-w-xs sm:max-w-none transition-all duration-700 ${
                 isIdle && isRunning
                   ? "opacity-0 pointer-events-none -translate-y-4"
                   : "opacity-100 translate-y-0"
@@ -1513,8 +1512,8 @@ export default function PomodoroTimer({
                 onClick={() => switchMode("focus")}
                 className={`text-xs sm:text-sm font-mono px-3 sm:px-5 py-2.5 sm:py-2 rounded-xl transition-all cursor-pointer whitespace-nowrap text-center ${
                   mode === "focus"
-                    ? "bg-zinc-800 text-emerald-400 font-bold shadow-sm border border-zinc-700"
-                    : "text-zinc-400 hover:text-zinc-200"
+                    ? "bg-surface-elevated text-accent font-semibold shadow-xs border border-border-subtle"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 FOCUS ({customFocusMins}M)
@@ -1523,8 +1522,8 @@ export default function PomodoroTimer({
                 onClick={() => switchMode("short_break")}
                 className={`text-xs sm:text-sm font-mono px-3 sm:px-5 py-2.5 sm:py-2 rounded-xl transition-all cursor-pointer whitespace-nowrap text-center ${
                   mode === "short_break"
-                    ? "bg-zinc-800 text-cyan-400 font-bold shadow-sm border border-zinc-700"
-                    : "text-zinc-400 hover:text-zinc-200"
+                    ? "bg-surface-elevated text-accent font-semibold shadow-xs border border-border-subtle"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 SHORT (5M)
@@ -1533,15 +1532,15 @@ export default function PomodoroTimer({
                 onClick={() => switchMode("long_break")}
                 className={`text-xs sm:text-sm font-mono px-3 sm:px-5 py-2.5 sm:py-2 rounded-xl transition-all cursor-pointer whitespace-nowrap text-center ${
                   mode === "long_break"
-                    ? "bg-zinc-800 text-purple-400 font-bold shadow-sm border border-zinc-700"
-                    : "text-zinc-400 hover:text-zinc-200"
+                    ? "bg-surface-elevated text-accent font-semibold shadow-xs border border-border-subtle"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 LONG (15M)
               </button>
               <button
                 onClick={() => setShowCustomMinsInput(true)}
-                className="text-xs sm:text-sm font-mono px-3 sm:px-4 py-2.5 sm:py-2 rounded-xl border border-dashed border-zinc-700 text-zinc-400 hover:text-zinc-200 whitespace-nowrap text-center flex items-center justify-center gap-1"
+                className="text-xs sm:text-sm font-mono px-3 sm:px-4 py-2.5 sm:py-2 rounded-xl border border-dashed border-border-subtle text-muted-foreground hover:text-foreground whitespace-nowrap text-center flex items-center justify-center gap-1"
                 title="Set Custom Focus Time"
               >
                 ⚙ CUSTOM
@@ -1553,13 +1552,13 @@ export default function PomodoroTimer({
               <div
                 className={`text-7xl xs:text-8xl sm:text-9xl md:text-[14vw] lg:text-[17vw] font-black font-mono tracking-tighter tabular-nums leading-none select-none ${
                   isIdle && isRunning ? "scale-105" : "scale-100"
-                } transition-transform duration-700 text-white`}
+                } transition-transform duration-700 text-foreground`}
               >
                 {formatTime(timeLeft)}
               </div>
 
               <p
-                className={`text-xs sm:text-sm font-mono tracking-widest text-zinc-400 uppercase mt-4 sm:mt-8 transition-opacity duration-700 ${
+                className={`text-xs sm:text-sm font-mono tracking-widest text-muted-foreground uppercase mt-4 sm:mt-8 transition-opacity duration-700 ${
                   isIdle && isRunning ? "opacity-40" : "opacity-100"
                 }`}
               >
@@ -1583,8 +1582,8 @@ export default function PomodoroTimer({
                 onClick={handleToggleTimer}
                 className={`h-14 sm:h-16 px-8 sm:px-12 rounded-2xl font-mono text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3 transition-all cursor-pointer ${
                   isRunning
-                    ? "bg-zinc-900 border border-zinc-700 text-zinc-200 hover:bg-zinc-800"
-                    : "bg-accent text-white hover:opacity-95 shadow-xs"
+                    ? "bg-surface-elevated border border-border-subtle text-foreground hover:bg-surface-hover"
+                    : "bg-accent text-accent-foreground hover:bg-accent-hover shadow-xs"
                 }`}
               >
                 {isRunning ? (
@@ -1600,7 +1599,7 @@ export default function PomodoroTimer({
 
               <button
                 onClick={() => resetTimer(mode)}
-                className="h-14 sm:h-16 w-14 sm:w-16 rounded-2xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white flex items-center justify-center transition cursor-pointer"
+                className="h-14 sm:h-16 w-14 sm:w-16 rounded-2xl bg-surface-muted border border-border-subtle hover:border-border-strong text-muted-foreground hover:text-foreground flex items-center justify-center transition cursor-pointer"
                 title="Reset Timer (R)"
               >
                 <RotateCcw className="w-5 h-5" />
@@ -1610,7 +1609,7 @@ export default function PomodoroTimer({
 
           {/* BOTTOM HELPER BAR */}
           <div
-            className={`relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between text-[11px] font-mono text-zinc-500 pt-4 border-t border-zinc-900 transition-all duration-700 ${
+            className={`relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between text-[11px] font-mono text-muted-foreground pt-4 border-t border-border-subtle transition-all duration-700 ${
               isIdle && isRunning
                 ? "opacity-0 pointer-events-none translate-y-4"
                 : "opacity-100 translate-y-0"
@@ -1618,32 +1617,32 @@ export default function PomodoroTimer({
           >
             <div className="hidden sm:flex items-center gap-4">
               <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-zinc-400">
+                <kbd className="px-1.5 py-0.5 bg-surface-muted border border-border-subtle rounded text-foreground">
                   Space
                 </kbd>{" "}
                 Play/Pause
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-zinc-400">
+                <kbd className="px-1.5 py-0.5 bg-surface-muted border border-border-subtle rounded text-foreground">
                   F
                 </kbd>{" "}
                 Fullscreen
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-zinc-400">
+                <kbd className="px-1.5 py-0.5 bg-surface-muted border border-border-subtle rounded text-foreground">
                   M
                 </kbd>{" "}
                 Focus Audio
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-zinc-400">
+                <kbd className="px-1.5 py-0.5 bg-surface-muted border border-border-subtle rounded text-foreground">
                   R
                 </kbd>{" "}
                 Reset
               </span>
             </div>
 
-            <div className="hidden sm:block text-zinc-500 font-semibold tracking-wider">Kanso</div>
+            <div className="hidden sm:block text-muted-foreground font-semibold tracking-wider">Kanso</div>
           </div>
 
           {renderMusicModal()}
@@ -1662,27 +1661,27 @@ export default function PomodoroTimer({
   return (
     <>
       {renderPersistentAudio()}
-      <div className="relative overflow-hidden bg-black border border-zinc-800/80 rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center">
+      <div className="relative overflow-hidden bg-surface border border-border-subtle rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center">
         {/* Ambience */}
         <div
           className={`absolute inset-0 pointer-events-none transition-opacity duration-500 ${
             mode === "focus"
-              ? "bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.05)_0,transparent_70%)]"
+              ? "bg-[radial-gradient(circle_at_center,var(--theme-accent-subtle)_0,transparent_70%)]"
               : mode === "short_break"
-                ? "bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.05)_0,transparent_70%)]"
-                : "bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.05)_0,transparent_70%)]"
+                ? "bg-[radial-gradient(circle_at_center,var(--theme-accent-subtle)_0,transparent_70%)]"
+                : "bg-[radial-gradient(circle_at_center,var(--theme-accent-subtle)_0,transparent_70%)]"
           }`}
         />
 
         {/* Card Header */}
         <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 mb-6 z-10">
-          <div className="grid grid-cols-2 sm:flex sm:items-center gap-1.5 sm:gap-1 bg-zinc-950/90 p-1.5 sm:p-1 rounded-xl border border-zinc-800/80 w-full sm:w-auto">
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-1.5 sm:gap-1 bg-surface-muted p-1.5 sm:p-1 rounded-xl border border-border-subtle w-full sm:w-auto">
             <button
               onClick={() => switchMode("focus")}
               className={`text-xs font-mono px-3 sm:px-4 py-2 sm:py-1.5 rounded-lg whitespace-nowrap transition-all cursor-pointer text-center ${
                 mode === "focus"
-                  ? "bg-zinc-800 text-emerald-400 font-bold shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-surface-elevated text-accent font-semibold shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               FOCUS ({customFocusMins}M)
@@ -1691,8 +1690,8 @@ export default function PomodoroTimer({
               onClick={() => switchMode("short_break")}
               className={`text-xs font-mono px-3 sm:px-4 py-2 sm:py-1.5 rounded-lg whitespace-nowrap transition-all cursor-pointer text-center ${
                 mode === "short_break"
-                  ? "bg-zinc-800 text-cyan-400 font-bold shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-surface-elevated text-accent font-semibold shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               SHORT (5M)
@@ -1701,15 +1700,15 @@ export default function PomodoroTimer({
               onClick={() => switchMode("long_break")}
               className={`text-xs font-mono px-3 sm:px-4 py-2 sm:py-1.5 rounded-lg whitespace-nowrap transition-all cursor-pointer text-center ${
                 mode === "long_break"
-                  ? "bg-zinc-800 text-purple-400 font-bold shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-surface-elevated text-accent font-semibold shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               LONG (15M)
             </button>
             <button
               onClick={() => setShowCustomMinsInput(true)}
-              className="text-xs font-mono px-2 py-2 sm:py-1.5 rounded-lg border border-dashed border-zinc-700 text-zinc-400 hover:text-emerald-400 whitespace-nowrap transition cursor-pointer text-center flex items-center justify-center gap-1"
+              className="text-xs font-mono px-2 py-2 sm:py-1.5 rounded-lg border border-dashed border-border-subtle text-muted-foreground hover:text-accent whitespace-nowrap transition cursor-pointer text-center flex items-center justify-center gap-1"
               title="Custom duration"
             >
               ⚙ CUSTOM
@@ -1721,8 +1720,8 @@ export default function PomodoroTimer({
               onClick={() => setShowMusicMenu(true)}
               className={`p-2 rounded-xl border text-xs font-mono transition cursor-pointer ${
                 musicPlaying
-                  ? "bg-emerald-950/80 border-emerald-500 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]"
-                  : "bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-zinc-200"
+                  ? "bg-accent-subtle border-accent text-accent shadow-xs"
+                  : "bg-surface-muted border border-border-subtle text-muted-foreground hover:text-foreground"
               }`}
               title="Focus Audio (M)"
             >
@@ -1736,9 +1735,9 @@ export default function PomodoroTimer({
               className={`p-2 rounded-xl border transition cursor-pointer ${
                 musicPlaying
                   ? musicVolume === 0
-                    ? "bg-rose-950/60 border-rose-800 text-rose-400"
-                    : "bg-emerald-950/60 border-emerald-800 text-emerald-400"
-                  : "bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-zinc-200"
+                    ? "bg-rose-500/10 border-rose-500/30 text-rose-500"
+                    : "bg-accent-subtle border-accent text-accent"
+                  : "bg-surface-muted border border-border-subtle hover:border-border-strong text-muted-foreground hover:text-foreground"
               }`}
               title={
                 musicPlaying
@@ -1752,9 +1751,9 @@ export default function PomodoroTimer({
             >
               {musicPlaying ? (
                 musicVolume === 0 ? (
-                  <VolumeX className="w-3.5 h-3.5 text-rose-400" />
+                  <VolumeX className="w-3.5 h-3.5 text-rose-500" />
                 ) : (
-                  <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <Volume2 className="w-3.5 h-3.5 text-accent" />
                 )
               ) : soundEnabled ? (
                 <Volume2 className="w-3.5 h-3.5" />
@@ -1780,10 +1779,10 @@ export default function PomodoroTimer({
           className="my-2 z-10 text-center cursor-pointer group"
           title="Click for Fullscreen Zen Mode"
         >
-          <div className="text-6xl sm:text-7xl md:text-8xl font-black font-mono tracking-tighter text-zinc-900 dark:text-zinc-100 tabular-nums select-none group-hover:scale-[1.01] transition-transform">
+          <div className="text-6xl sm:text-7xl md:text-8xl font-black font-mono tracking-tighter text-foreground tabular-nums select-none group-hover:scale-[1.01] transition-transform">
             {formatTime(timeLeft)}
           </div>
-          <p className="text-[11px] font-mono tracking-widest text-zinc-500 uppercase mt-2 group-hover:text-accent transition-colors">
+          <p className="text-[11px] font-mono tracking-widest text-muted-foreground uppercase mt-2 group-hover:text-accent transition-colors">
             {isRunning
               ? mode === "focus"
                 ? "Deep Work Sprint • In The Flow"
@@ -1798,8 +1797,8 @@ export default function PomodoroTimer({
             onClick={handleToggleTimer}
             className={`h-12 px-6 rounded-xl font-mono text-xs font-bold tracking-wider flex items-center gap-2 transition-all cursor-pointer ${
               isRunning
-                ? "bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800"
-                : "bg-accent text-white hover:opacity-95 shadow-xs"
+                ? "bg-surface-elevated border border-border-subtle text-foreground hover:bg-surface-hover"
+                : "bg-accent text-accent-foreground hover:bg-accent-hover shadow-xs"
             }`}
           >
             {isRunning ? (
@@ -1815,7 +1814,7 @@ export default function PomodoroTimer({
 
           <button
             onClick={() => resetTimer(mode)}
-            className="h-12 w-12 rounded-xl bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 text-zinc-500 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center transition cursor-pointer"
+            className="h-12 w-12 rounded-xl bg-surface-muted border border-border-subtle hover:border-border-strong text-muted-foreground hover:text-foreground flex items-center justify-center transition cursor-pointer"
             title="Reset Timer"
           >
             <RotateCcw className="w-4 h-4" />
@@ -1823,23 +1822,23 @@ export default function PomodoroTimer({
         </div>
 
         {/* Helper */}
-        <div className="mt-4 text-[10px] font-mono text-zinc-600 hidden sm:flex items-center gap-2">
+        <div className="mt-4 text-[10px] font-mono text-muted-foreground hidden sm:flex items-center gap-2">
           <span className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-zinc-400">
+            <kbd className="px-1.5 py-0.5 bg-surface-muted border border-border-subtle rounded text-foreground">
               Space
             </kbd>{" "}
             play/pause
           </span>
           <span>•</span>
           <span className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-zinc-400">
+            <kbd className="px-1.5 py-0.5 bg-surface-muted border border-border-subtle rounded text-foreground">
               F
             </kbd>{" "}
             fullscreen
           </span>
           <span>•</span>
           <span className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-zinc-400">
+            <kbd className="px-1.5 py-0.5 bg-surface-muted border border-border-subtle rounded text-foreground">
               M
             </kbd>{" "}
             focus audio

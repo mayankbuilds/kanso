@@ -40,9 +40,9 @@ export default function ProblemLogger({ onLog }: ProblemLoggerProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-4 transition-all focus-within:border-zinc-700"
+      className="bg-surface border border-border-subtle rounded-2xl p-4 transition-all focus-within:border-border-strong"
     >
-      <span className="text-xs font-mono text-zinc-400 block mb-2 font-medium">
+      <span className="text-xs font-mono text-muted-foreground block mb-2 font-medium">
         Log Solved Problem (+30 XP):
       </span>
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
@@ -52,13 +52,13 @@ export default function ProblemLogger({ onLog }: ProblemLoggerProps) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           disabled={submitting}
-          className="sm:col-span-6 bg-zinc-950 border border-zinc-800 px-3 py-2 text-xs rounded-xl text-zinc-200 focus:outline-none focus:border-emerald-500 font-mono"
+          className="sm:col-span-6 bg-surface-muted border border-border-subtle px-3 py-2 text-xs rounded-xl text-foreground focus:outline-none focus:border-accent font-mono placeholder:text-muted-foreground"
         />
         <select
           value={platform}
           onChange={(e) => setPlatform(e.target.value)}
           disabled={submitting}
-          className="sm:col-span-2 bg-zinc-950 border border-zinc-800 px-2 py-2 text-xs rounded-xl text-zinc-300 focus:outline-none"
+          className="sm:col-span-2 bg-surface-muted border border-border-subtle px-2 py-2 text-xs rounded-xl text-foreground focus:outline-none focus:border-accent cursor-pointer"
         >
           <option value="LeetCode">LeetCode</option>
           <option value="Codeforces">CF</option>
@@ -69,7 +69,7 @@ export default function ProblemLogger({ onLog }: ProblemLoggerProps) {
           value={difficulty}
           onChange={(e) => setDifficulty(e.target.value)}
           disabled={submitting}
-          className="sm:col-span-2 bg-zinc-950 border border-zinc-800 px-2 py-2 text-xs rounded-xl text-zinc-300 focus:outline-none"
+          className="sm:col-span-2 bg-surface-muted border border-border-subtle px-2 py-2 text-xs rounded-xl text-foreground focus:outline-none focus:border-accent cursor-pointer"
         >
           <option value="Easy">Easy</option>
           <option value="Medium">Medium</option>
@@ -78,7 +78,7 @@ export default function ProblemLogger({ onLog }: ProblemLoggerProps) {
         <button
           type="submit"
           disabled={submitting || !title.trim()}
-          className="sm:col-span-2 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 active:scale-95 text-black font-bold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+          className="sm:col-span-2 bg-accent hover:bg-accent-hover disabled:opacity-50 active:scale-95 text-accent-foreground font-medium text-xs py-2 rounded-xl transition flex items-center justify-center gap-1 shadow-xs cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" /> Log
         </button>

@@ -21,9 +21,9 @@ export default function FocusSection({
   const completedCount = tasks.filter((t) => t.is_completed).length;
 
   return (
-    <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-xs">
+    <div className="bg-surface border border-border-subtle rounded-2xl p-4 sm:p-5 shadow-xs">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-zinc-800 dark:text-zinc-300 flex items-center gap-2">
+        <h2 className="text-xs font-bold uppercase tracking-wider font-mono text-foreground flex items-center gap-2">
           <Target className="w-4 h-4 text-accent" /> Rule of 3 • Daily Focus
         </h2>
         {completedCount === 3 ? (
@@ -31,7 +31,7 @@ export default function FocusSection({
             <Trophy className="w-3 h-3" /> Day Complete
           </span>
         ) : (
-          <span className="text-[10px] font-mono text-zinc-500">
+          <span className="text-[10px] font-mono text-muted-foreground">
             {completedCount}/3 Done
           </span>
         )}

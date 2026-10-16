@@ -1,6 +1,6 @@
 "use client";
 
-import { STORAGE_KEYS } from "./storage/keys";
+import { STORAGE_KEYS } from "./storage/keys.ts";
 
 export type ThemeMode = "system" | "dark" | "light";
 export type ResolvedTheme = "dark" | "light";
@@ -15,6 +15,10 @@ export interface AccentConfig {
   darkSubtle: string;
   lightBorder: string;
   darkBorder: string;
+  lightHover: string;
+  darkHover: string;
+  lightForeground: string;
+  darkForeground: string;
   previewBg: string;
 }
 
@@ -28,6 +32,10 @@ export const ACCENT_PALETTES: AccentConfig[] = [
     darkSubtle: "rgba(78, 155, 116, 0.14)",
     lightBorder: "rgba(45, 90, 67, 0.22)",
     darkBorder: "rgba(78, 155, 116, 0.28)",
+    lightHover: "#234734",
+    darkHover: "#5cb387",
+    lightForeground: "#ffffff",
+    darkForeground: "#090909",
     previewBg: "#3e7b5c",
   },
   {
@@ -39,6 +47,10 @@ export const ACCENT_PALETTES: AccentConfig[] = [
     darkSubtle: "rgba(82, 153, 181, 0.14)",
     lightBorder: "rgba(44, 98, 119, 0.22)",
     darkBorder: "rgba(82, 153, 181, 0.28)",
+    lightHover: "#224e5f",
+    darkHover: "#63acd0",
+    lightForeground: "#ffffff",
+    darkForeground: "#090909",
     previewBg: "#4a8b9f",
   },
   {
@@ -50,6 +62,10 @@ export const ACCENT_PALETTES: AccentConfig[] = [
     darkSubtle: "rgba(196, 165, 107, 0.14)",
     lightBorder: "rgba(130, 101, 51, 0.22)",
     darkBorder: "rgba(196, 165, 107, 0.28)",
+    lightHover: "#6d5429",
+    darkHover: "#d2b781",
+    lightForeground: "#ffffff",
+    darkForeground: "#090909",
     previewBg: "#a8884d",
   },
   {
@@ -61,6 +77,10 @@ export const ACCENT_PALETTES: AccentConfig[] = [
     darkSubtle: "rgba(194, 112, 94, 0.14)",
     lightBorder: "rgba(138, 73, 58, 0.22)",
     darkBorder: "rgba(194, 112, 94, 0.28)",
+    lightHover: "#733c2f",
+    darkHover: "#ce8170",
+    lightForeground: "#ffffff",
+    darkForeground: "#090909",
     previewBg: "#a65d4b",
   },
 ];
@@ -95,14 +115,15 @@ export function normalizeThemeMode(raw: string | null): ThemeMode {
  * Resolves current theme given preference and system scheme.
  */
 export function resolveThemeMode(mode: ThemeMode): ResolvedTheme {
+  if (mode === "light") return "light";
+  if (mode === "dark") return "dark";
   if (typeof window === "undefined") return "dark";
-  if (mode === "system") {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-  }
-  return mode;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
 }
+
+let isApplyingTheme = false;
 
 /**
  * Applies theme mode and accent color to document root and persists preference.
@@ -115,9 +136,16 @@ export function applyTheme(
     return { resolvedMode: "dark", accent: "pine" };
   }
 
-  const root = document.documentElement;
   const resolvedMode = resolveThemeMode(mode);
   const normalizedAccent = normalizeAccent(accent);
+
+  if (isApplyingTheme) {
+    return { resolvedMode, accent: normalizedAccent };
+  }
+
+  isApplyingTheme = true;
+  try {
+    const root = document.documentElement;
 
   if (resolvedMode === "dark") {
     root.classList.add("dark");
@@ -139,10 +167,16 @@ export function applyTheme(
     resolvedMode === "dark" ? found.darkSubtle : found.lightSubtle;
   const accentBorder =
     resolvedMode === "dark" ? found.darkBorder : found.lightBorder;
+  const accentHover =
+    resolvedMode === "dark" ? found.darkHover : found.lightHover;
+  const accentForeground =
+    resolvedMode === "dark" ? found.darkForeground : found.lightForeground;
 
   root.style.setProperty("--theme-accent", accentHex);
   root.style.setProperty("--theme-accent-subtle", accentSubtle);
   root.style.setProperty("--theme-accent-border", accentBorder);
+  root.style.setProperty("--theme-accent-hover", accentHover);
+  root.style.setProperty("--theme-accent-foreground", accentForeground);
 
   // Persist modern keys
   localStorage.setItem(STORAGE_KEYS.THEME_MODE, mode);
@@ -164,7 +198,10 @@ export function applyTheme(
     })
   );
 
-  return { resolvedMode, accent: normalizedAccent };
+    return { resolvedMode, accent: normalizedAccent };
+  } finally {
+    isApplyingTheme = false;
+  }
 }
 
 /**

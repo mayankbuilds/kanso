@@ -3,9 +3,9 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ==========================================================================
-   KANSO DESIGN SYSTEM — THEMES & ACCENTS
-   Theme 1: Washi (Light) — Soft neutral backgrounds, clean white surfaces.
-   Theme 2: Sumi (Dark)  — Deep neutral backgrounds, comfortable contrast.
+   KANSO DESIGN SYSTEM — CENTRALIZED SEMANTIC TOKENS
+   Theme 1: Washi (Light) — Warm, soft paper background, clean white surfaces.
+   Theme 2: Sumi (Dark)  — Deep #090909 near-black, refined low-contrast surfaces.
    ========================================================================== */
 
 :root {
@@ -15,6 +15,7 @@
   --surface: #ffffff;
   --surface-muted: #f0f2f5;
   --surface-elevated: #ffffff;
+  --surface-hover: #eef1f4;
   --border-subtle: #e5e8ec;
   --border-strong: #d2d6dc;
   --text-primary: #18191b;
@@ -25,30 +26,35 @@
   --theme-accent: #2d5a43;
   --theme-accent-subtle: rgba(45, 90, 67, 0.08);
   --theme-accent-border: rgba(45, 90, 67, 0.22);
+  --theme-accent-hover: #234734;
+  --theme-accent-foreground: #ffffff;
 }
 
 .dark,
 [data-theme="dark"] {
-  /* Dark Theme (Sumi) */
-  --background: #0f1012;
-  --foreground: #e4e5e7;
-  --surface: #16171a;
-  --surface-muted: #1c1d21;
-  --surface-elevated: #22242a;
-  --border-subtle: #26282e;
-  --border-strong: #363942;
-  --text-primary: #e4e5e7;
-  --text-secondary: #9da3ae;
-  --text-tertiary: #6b7280;
+  /* Dark Theme (Sumi) — Deep near-black #090909 */
+  --background: #090909;
+  --foreground: #ededed;
+  --surface: #101010;
+  --surface-muted: #151515;
+  --surface-elevated: #1a1a1a;
+  --surface-hover: #202020;
+  --border-subtle: #1f1f1f;
+  --border-strong: #2e2e2e;
+  --text-primary: #ededed;
+  --text-secondary: #a0a0a0;
+  --text-tertiary: #707070;
 
   /* Accent: Pine (Dark default) */
   --theme-accent: #4e9b74;
   --theme-accent-subtle: rgba(78, 155, 116, 0.14);
   --theme-accent-border: rgba(78, 155, 116, 0.28);
+  --theme-accent-hover: #5cb387;
+  --theme-accent-foreground: #090909;
 }
 
 /* ==========================================================================
-   RESTAINED ACCENT PALETTES
+   RESTRAINED ACCENT PALETTES
    Pine, Ceramic, Sand, Clay
    ========================================================================== */
 
@@ -57,12 +63,16 @@
   --theme-accent: #2d5a43;
   --theme-accent-subtle: rgba(45, 90, 67, 0.08);
   --theme-accent-border: rgba(45, 90, 67, 0.22);
+  --theme-accent-hover: #234734;
+  --theme-accent-foreground: #ffffff;
 }
 .dark[data-accent="pine"],
 [data-theme="dark"][data-accent="pine"] {
   --theme-accent: #4e9b74;
   --theme-accent-subtle: rgba(78, 155, 116, 0.14);
   --theme-accent-border: rgba(78, 155, 116, 0.28);
+  --theme-accent-hover: #5cb387;
+  --theme-accent-foreground: #090909;
 }
 
 /* Ceramic Accent */
@@ -70,12 +80,16 @@
   --theme-accent: #2c6277;
   --theme-accent-subtle: rgba(44, 98, 119, 0.08);
   --theme-accent-border: rgba(44, 98, 119, 0.22);
+  --theme-accent-hover: #224e5f;
+  --theme-accent-foreground: #ffffff;
 }
 .dark[data-accent="ceramic"],
 [data-theme="dark"][data-accent="ceramic"] {
   --theme-accent: #5299b5;
   --theme-accent-subtle: rgba(82, 153, 181, 0.14);
   --theme-accent-border: rgba(82, 153, 181, 0.28);
+  --theme-accent-hover: #63acd0;
+  --theme-accent-foreground: #090909;
 }
 
 /* Sand Accent */
@@ -83,12 +97,16 @@
   --theme-accent: #826533;
   --theme-accent-subtle: rgba(130, 101, 51, 0.08);
   --theme-accent-border: rgba(130, 101, 51, 0.22);
+  --theme-accent-hover: #6d5429;
+  --theme-accent-foreground: #ffffff;
 }
 .dark[data-accent="sand"],
 [data-theme="dark"][data-accent="sand"] {
   --theme-accent: #c4a56b;
   --theme-accent-subtle: rgba(196, 165, 107, 0.14);
   --theme-accent-border: rgba(196, 165, 107, 0.28);
+  --theme-accent-hover: #d2b781;
+  --theme-accent-foreground: #090909;
 }
 
 /* Clay Accent */
@@ -96,27 +114,125 @@
   --theme-accent: #8a493a;
   --theme-accent-subtle: rgba(138, 73, 58, 0.08);
   --theme-accent-border: rgba(138, 73, 58, 0.22);
+  --theme-accent-hover: #733c2f;
+  --theme-accent-foreground: #ffffff;
 }
 .dark[data-accent="clay"],
 [data-theme="dark"][data-accent="clay"] {
   --theme-accent: #c2705e;
   --theme-accent-subtle: rgba(194, 112, 94, 0.14);
   --theme-accent-border: rgba(194, 112, 94, 0.28);
+  --theme-accent-hover: #ce8170;
+  --theme-accent-foreground: #090909;
 }
+
+/* ==========================================================================
+   TAILWIND INTEGRATION VIA @THEME INLINE
+   Maps semantic CSS variables to Tailwind utility classes
+   ========================================================================== */
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-hover: var(--surface-hover);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+
+  --color-card: var(--surface);
+  --color-muted: var(--surface-muted);
+  --color-border: var(--border-subtle);
+
+  --color-muted-foreground: var(--text-secondary);
+  --color-subtle-foreground: var(--text-tertiary);
+
+  --color-accent: var(--theme-accent);
+  --color-accent-subtle: var(--theme-accent-subtle);
+  --color-accent-border: var(--theme-accent-border);
+  --color-accent-hover: var(--theme-accent-hover);
+  --color-accent-foreground: var(--theme-accent-foreground);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
+
+/* ==========================================================================
+   BASE & FALLBACK SEMANTIC UTILITY CLASSES
+   Guarantees immediate clean resolution without brute-force overrides
+   ========================================================================== */
+
+.bg-background {
+  background-color: var(--background);
+}
+
+.text-foreground {
+  color: var(--foreground);
+}
+
+.bg-surface {
+  background-color: var(--surface);
+}
+
+.bg-surface-muted {
+  background-color: var(--surface-muted);
+}
+
+.bg-surface-elevated {
+  background-color: var(--surface-elevated);
+}
+
+.border-border-subtle {
+  border-color: var(--border-subtle);
+}
+
+.border-border-strong {
+  border-color: var(--border-strong);
+}
+
+.text-muted-foreground {
+  color: var(--text-secondary);
+}
+
+.text-subtle-foreground {
+  color: var(--text-tertiary);
+}
+
+.bg-accent {
+  background-color: var(--theme-accent);
+}
+
+.text-accent {
+  color: var(--theme-accent);
+}
+
+.bg-accent-subtle {
+  background-color: var(--theme-accent-subtle);
+}
+
+.border-accent {
+  border-color: var(--theme-accent-border);
+}
+
+.border-accent-border {
+  border-color: var(--theme-accent-border);
+}
+
+.text-accent-foreground {
+  color: var(--theme-accent-foreground);
+}
+
+/* ==========================================================================
+   DOCUMENT BODY & BASE STYLES
+   ========================================================================== */
 
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   overflow-x: hidden;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 /* Custom Scrollbar Utilities */
@@ -129,129 +245,7 @@ body {
   scrollbar-width: none;
 }
 
-/* ==========================================================================
-   DYNAMIC SEMANTIC ACCENT CLASSES
-   Harmonizes primary action buttons and highlights with chosen accent
-   ========================================================================== */
-
-.text-accent {
-  color: var(--theme-accent) !important;
-}
-
-.bg-accent {
-  background-color: var(--theme-accent) !important;
-}
-
-.bg-accent-subtle {
-  background-color: var(--theme-accent-subtle) !important;
-}
-
-.border-accent {
-  border-color: var(--theme-accent-border) !important;
-}
-
-/* Map default emerald accent classes cleanly to current active accent */
-.text-emerald-400,
-.text-emerald-500 {
-  color: var(--theme-accent) !important;
-}
-
-.bg-emerald-500,
-.bg-emerald-600 {
-  background-color: var(--theme-accent) !important;
-  color: #ffffff !important;
-}
-
-.hover\:bg-emerald-400:hover,
-.hover\:bg-emerald-500:hover {
-  filter: brightness(1.08);
-}
-
-.bg-emerald-950\/40,
-.bg-emerald-950\/60,
-.bg-emerald-950\/80,
-.bg-emerald-950 {
-  background-color: var(--theme-accent-subtle) !important;
-  color: var(--theme-accent) !important;
-}
-
-.border-emerald-500,
-.border-emerald-700,
-.border-emerald-700\/80,
-.border-emerald-800,
-.border-emerald-800\/60,
-.border-emerald-800\/80,
-.border-emerald-900,
-.border-emerald-900\/50 {
-  border-color: var(--theme-accent-border) !important;
-}
-
-/* ==========================================================================
-   WASHI (LIGHT THEME) SURFACE & CONTRAST ADAPTATIONS
-   ========================================================================== */
-
-html.light body {
-  background-color: #f7f8fa;
-  color: #18191b;
-}
-
-html.light .bg-zinc-950 {
-  background-color: #f0f2f5 !important;
-  color: #18191b !important;
-}
-
-html.light .bg-zinc-900,
-html.light .bg-zinc-900\/40,
-html.light .bg-zinc-900\/60,
-html.light .bg-zinc-900\/80,
-html.light .bg-zinc-900\/90 {
-  background-color: #ffffff !important;
-  color: #18191b !important;
-}
-
-html.light .border-zinc-800,
-html.light .border-zinc-800\/40,
-html.light .border-zinc-800\/60,
-html.light .border-zinc-800\/80,
-html.light .border-zinc-700,
-html.light .border-zinc-700\/80 {
-  border-color: #e5e8ec !important;
-}
-
-html.light .text-zinc-100,
-html.light .text-zinc-200,
-html.light .text-zinc-300,
-html.light .text-white {
-  color: #18191b !important;
-}
-
-html.light .text-zinc-400,
-html.light .text-zinc-500 {
-  color: #5c6370 !important;
-}
-
-html.light .text-zinc-600 {
-  color: #8b929f !important;
-}
-
-html.light .hover\:bg-zinc-800:hover,
-html.light .hover\:bg-zinc-700:hover,
-html.light .hover\:bg-zinc-900:hover {
-  background-color: #eef1f4 !important;
-}
-
-html.light input,
-html.light select,
-html.light textarea {
-  color: #18191b !important;
-}
-
-html.light input::placeholder,
-html.light textarea::placeholder {
-  color: #8b929f !important;
-}
-
-/* Neutral subtle focus and button transitions */
+/* Standardized UI transitions */
 button, a {
   transition: all 0.15s ease-in-out;
 }

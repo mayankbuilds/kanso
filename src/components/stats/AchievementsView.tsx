@@ -681,16 +681,16 @@ export default function AchievementsView({
   return (
     <div className="space-y-6 font-mono">
       {/* TOP BANNER: MILESTONES & PROGRESS */}
-      <div className="bg-surface-elevated border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-6 relative overflow-hidden">
+      <div className="bg-surface border border-border-subtle rounded-2xl p-6 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
           <div>
             <span className="text-xs text-accent uppercase tracking-wider flex items-center gap-1.5 font-semibold">
               <Award className="w-3.5 h-3.5" /> Milestones & Progress
             </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mt-1">
               Level {level}
             </h2>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {300 - currentLevelProgress} XP remaining to achieve Level{" "}
               {level + 1}
             </p>
@@ -700,7 +700,7 @@ export default function AchievementsView({
             <span className="text-3xl sm:text-4xl font-bold text-accent">
               {xp}
             </span>
-            <span className="text-xs text-zinc-500 block">
+            <span className="text-xs text-muted-foreground block">
               Lifetime XP
             </span>
           </div>
@@ -708,13 +708,13 @@ export default function AchievementsView({
 
         {/* Progress Bar */}
         <div className="mt-6 relative z-10">
-          <div className="flex justify-between text-[11px] text-zinc-500 dark:text-zinc-400 mb-1.5">
+          <div className="flex justify-between text-[11px] text-muted-foreground mb-1.5">
             <span>Progress to Next Level</span>
-            <span className="font-semibold text-zinc-700 dark:text-zinc-300">
+            <span className="font-semibold text-foreground">
               {Math.round((currentLevelProgress / 300) * 100)}%
             </span>
           </div>
-          <div className="h-2.5 w-full bg-zinc-100 dark:bg-zinc-800/80 rounded-full border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+          <div className="h-2.5 w-full bg-surface-muted rounded-full border border-border-subtle overflow-hidden">
             <div
               className="h-full bg-accent rounded-full transition-all duration-500"
               style={{ width: `${(currentLevelProgress / 300) * 100}%` }}
@@ -725,32 +725,32 @@ export default function AchievementsView({
 
       {/* QUICK METRIC CARDS */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-surface-elevated border border-zinc-200 dark:border-zinc-800/80 p-4 rounded-2xl">
-          <span className="text-[10px] uppercase text-zinc-500 block font-semibold tracking-wider">
+        <div className="bg-surface border border-border-subtle p-4 rounded-2xl">
+          <span className="text-[10px] uppercase text-muted-foreground block font-semibold tracking-wider">
             Total Solved
           </span>
-          <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mt-1 block">
+          <span className="text-2xl font-bold text-foreground mt-1 block">
             {totalSolved}
           </span>
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">DSA Problems</span>
+          <span className="text-[10px] text-muted-foreground">DSA Problems</span>
         </div>
 
-        <div className="bg-surface-elevated border border-zinc-200 dark:border-zinc-800/80 p-4 rounded-2xl">
-          <span className="text-[10px] uppercase text-zinc-500 block font-semibold tracking-wider">
+        <div className="bg-surface border border-border-subtle p-4 rounded-2xl">
+          <span className="text-[10px] uppercase text-muted-foreground block font-semibold tracking-wider">
             Focus Time
           </span>
           <div className="flex items-baseline gap-1 mt-1">
             <span
               suppressHydrationWarning
-              className="text-2xl font-bold text-zinc-900 dark:text-zinc-100"
+              className="text-2xl font-bold text-foreground"
             >
               {displayedTotalMinutes}
             </span>
-            <span className="text-xs text-zinc-500 font-semibold">mins</span>
+            <span className="text-xs text-muted-foreground font-semibold">mins</span>
             {displayedTotalMinutes >= 60 && (
               <span
                 suppressHydrationWarning
-                className="text-[10px] text-zinc-500 font-normal"
+                className="text-[10px] text-muted-foreground font-normal"
               >
                 ({Math.round((displayedTotalMinutes / 60) * 10) / 10}h)
               </span>
@@ -758,49 +758,49 @@ export default function AchievementsView({
           </div>
           <span
             suppressHydrationWarning
-            className="text-[10px] text-zinc-500 dark:text-zinc-400 block mt-0.5"
+            className="text-[10px] text-muted-foreground block mt-0.5"
           >
             Today: {displayedTodayMinutes}m • {focusStats?.total_sessions ?? 0}{" "}
             Pomodoros
           </span>
         </div>
 
-        <div className="bg-surface-elevated border border-zinc-200 dark:border-zinc-800/80 p-4 rounded-2xl">
-          <span className="text-[10px] uppercase text-zinc-500 block font-semibold tracking-wider">
+        <div className="bg-surface border border-border-subtle p-4 rounded-2xl">
+          <span className="text-[10px] uppercase text-muted-foreground block font-semibold tracking-wider">
             Active Streak
           </span>
           <span className="text-2xl font-bold text-accent mt-1 block flex items-center gap-1.5">
             <Flame className="w-5 h-5 text-accent" />
             {streak}d
           </span>
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">Consistency Ledger</span>
+          <span className="text-[10px] text-muted-foreground">Consistency Ledger</span>
         </div>
 
-        <div className="bg-surface-elevated border border-zinc-200 dark:border-zinc-800/80 p-4 rounded-2xl">
-          <span className="text-[10px] uppercase text-zinc-500 block font-semibold tracking-wider">
+        <div className="bg-surface border border-border-subtle p-4 rounded-2xl">
+          <span className="text-[10px] uppercase text-muted-foreground block font-semibold tracking-wider">
             Longest Streak
           </span>
-          <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mt-1 block">
+          <span className="text-2xl font-bold text-foreground mt-1 block">
             {stats?.longest_streak_days ?? 0}d
           </span>
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">Personal Best</span>
+          <span className="text-[10px] text-muted-foreground">Personal Best</span>
         </div>
       </div>
 
       {/* 1-CLICK PROFILE AUTO-SYNC SECTION */}
-      <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-5 sm:p-6 space-y-4">
+      <div className="bg-surface border border-border-subtle rounded-2xl p-5 sm:p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-200 flex items-center gap-2">
-              <RefreshCw className="w-4 h-4 text-emerald-400" /> Competitive
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground flex items-center gap-2">
+              <RefreshCw className="w-4 h-4 text-accent" /> Competitive
               Coding Auto-Sync
             </h3>
-            <p className="text-[11px] text-zinc-500 mt-0.5">
+            <p className="text-[11px] text-muted-foreground mt-0.5">
               1-Click synchronization with public LeetCode and Codeforces
               profiles
             </p>
           </div>
-          <span className="text-[10px] text-zinc-500 bg-zinc-950 border border-zinc-800 px-2 py-1 rounded-md">
+          <span className="text-[10px] text-muted-foreground bg-surface-muted border border-border-subtle px-2 py-1 rounded-md">
             Direct Public APIs
           </span>
         </div>
@@ -809,15 +809,15 @@ export default function AchievementsView({
           {/* LeetCode Sync Card */}
           <form
             onSubmit={handleSyncLeetCode}
-            className="p-4 bg-zinc-950/70 border border-zinc-800 rounded-xl space-y-3"
+            className="p-4 bg-surface-muted border border-border-subtle rounded-xl space-y-3"
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 font-bold text-xs text-amber-500 dark:text-amber-400">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 dark:bg-amber-400" />
+              <div className="flex items-center gap-2 font-medium text-xs text-foreground">
+                <span className="w-2 h-2 rounded-full bg-accent" />
                 LeetCode Profile
               </div>
               {lcResult && (
-                <span className="text-[10px] text-emerald-400 bg-emerald-950/60 border border-emerald-800 px-2 py-0.5 rounded-md flex items-center gap-1">
+                <span className="text-[10px] text-accent bg-accent-subtle border border-accent/30 px-2 py-0.5 rounded-md flex items-center gap-1 font-medium">
                   <CheckCircle2 className="w-3 h-3" /> Synced
                 </span>
               )}
@@ -829,12 +829,12 @@ export default function AchievementsView({
                 placeholder="LeetCode username (e.g. neetcode)"
                 value={lcUsername}
                 onChange={(e) => setLcUsername(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 px-3 py-1.5 text-xs rounded-lg text-zinc-200 focus:outline-none focus:border-amber-500"
+                className="w-full bg-surface border border-border-subtle px-3 py-1.5 text-xs rounded-lg text-foreground focus:outline-none focus:border-accent"
               />
               <button
                 type="submit"
                 disabled={syncingLc}
-                className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="px-3 py-1.5 bg-accent hover:bg-accent-hover text-accent-foreground font-medium text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-xs"
               >
                 {syncingLc ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -845,24 +845,24 @@ export default function AchievementsView({
             </div>
 
             {lcResult && (
-              <div className="pt-2 border-t border-zinc-900 grid grid-cols-3 gap-2 text-center">
-                <div className="bg-zinc-900/60 p-2 rounded-lg">
-                  <span className="text-[9px] text-zinc-500 block">Total</span>
-                  <span className="text-sm font-bold text-zinc-200">
+              <div className="pt-2 border-t border-border-subtle grid grid-cols-3 gap-2 text-center">
+                <div className="bg-surface p-2 rounded-lg border border-border-subtle">
+                  <span className="text-[9px] text-muted-foreground block">Total</span>
+                  <span className="text-sm font-bold text-foreground">
                     {lcResult.total_solved}
                   </span>
                 </div>
-                <div className="bg-zinc-900/60 p-2 rounded-lg">
+                <div className="bg-surface p-2 rounded-lg border border-border-subtle">
                   <span className="text-[9px] text-emerald-500 block">
                     Easy/Med
                   </span>
-                  <span className="text-sm font-bold text-emerald-400">
+                  <span className="text-sm font-bold text-emerald-500">
                     {lcResult.easy_solved + lcResult.medium_solved}
                   </span>
                 </div>
-                <div className="bg-zinc-900/60 p-2 rounded-lg">
+                <div className="bg-surface p-2 rounded-lg border border-border-subtle">
                   <span className="text-[9px] text-rose-500 block">Hard</span>
-                  <span className="text-sm font-bold text-rose-400">
+                  <span className="text-sm font-bold text-rose-500">
                     {lcResult.hard_solved}
                   </span>
                 </div>
@@ -870,7 +870,7 @@ export default function AchievementsView({
             )}
 
             {lcError && (
-              <p className="text-[11px] text-rose-400 bg-rose-950/40 p-2 rounded-lg border border-rose-900/50">
+              <p className="text-[11px] text-rose-500 bg-rose-500/10 p-2 rounded-lg border border-rose-500/30">
                 {lcError}
               </p>
             )}
@@ -879,15 +879,15 @@ export default function AchievementsView({
           {/* Codeforces Sync Card */}
           <form
             onSubmit={handleSyncCodeforces}
-            className="p-4 bg-zinc-950/70 border border-zinc-800 rounded-xl space-y-3"
+            className="p-4 bg-surface-muted border border-border-subtle rounded-xl space-y-3"
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 font-bold text-xs text-blue-500 dark:text-blue-400">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500 dark:bg-blue-400" />
+              <div className="flex items-center gap-2 font-medium text-xs text-foreground">
+                <span className="w-2 h-2 rounded-full bg-accent" />
                 Codeforces Handle
               </div>
               {cfResult && (
-                <span className="text-[10px] text-blue-400 bg-blue-950/60 border border-blue-800 px-2 py-0.5 rounded-md flex items-center gap-1">
+                <span className="text-[10px] text-accent bg-accent-subtle border border-accent/30 px-2 py-0.5 rounded-md flex items-center gap-1 font-medium">
                   <CheckCircle2 className="w-3 h-3" /> Synced
                 </span>
               )}
@@ -899,12 +899,12 @@ export default function AchievementsView({
                 placeholder="Codeforces handle (e.g. tourist)"
                 value={cfHandle}
                 onChange={(e) => setCfHandle(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 px-3 py-1.5 text-xs rounded-lg text-zinc-200 focus:outline-none focus:border-blue-500"
+                className="w-full bg-surface border border-border-subtle px-3 py-1.5 text-xs rounded-lg text-foreground focus:outline-none focus:border-accent"
               />
               <button
                 type="submit"
                 disabled={syncingCf}
-                className="px-3 py-1.5 bg-blue-500 hover:bg-blue-400 text-black font-bold text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="px-3 py-1.5 bg-accent hover:bg-accent-hover text-accent-foreground font-medium text-xs rounded-lg transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-xs"
               >
                 {syncingCf ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -915,18 +915,18 @@ export default function AchievementsView({
             </div>
 
             {cfResult && (
-              <div className="pt-2 border-t border-zinc-900 grid grid-cols-3 gap-2 text-center">
-                <div className="bg-zinc-900/60 p-2 rounded-lg">
-                  <span className="text-[9px] text-zinc-500 block">Rating</span>
-                  <span className="text-sm font-bold text-blue-400">
+              <div className="pt-2 border-t border-border-subtle grid grid-cols-3 gap-2 text-center">
+                <div className="bg-surface p-2 rounded-lg border border-border-subtle">
+                  <span className="text-[9px] text-muted-foreground block">Rating</span>
+                  <span className="text-sm font-bold text-foreground">
                     {cfResult.rating || "Unrated"}
                   </span>
                 </div>
-                <div className="bg-zinc-900/60 p-2 rounded-lg col-span-2">
-                  <span className="text-[9px] text-zinc-500 block">
+                <div className="bg-surface p-2 rounded-lg border border-border-subtle col-span-2">
+                  <span className="text-[9px] text-muted-foreground block">
                     Rank / Solved
                   </span>
-                  <span className="text-xs font-bold text-zinc-200">
+                  <span className="text-xs font-bold text-foreground">
                     {cfResult.rank || "Participant"} • {cfResult.total_solved}{" "}
                     solved
                   </span>
@@ -935,7 +935,7 @@ export default function AchievementsView({
             )}
 
             {cfError && (
-              <p className="text-[11px] text-rose-400 bg-rose-950/40 p-2 rounded-lg border border-rose-900/50">
+              <p className="text-[11px] text-rose-500 bg-rose-500/10 p-2 rounded-lg border border-rose-500/30">
                 {cfError}
               </p>
             )}
@@ -946,22 +946,22 @@ export default function AchievementsView({
       {/* CHARTS GRID: FOCUS TRENDS & PLATFORM / DIFFICULTY BREAKDOWN */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* CHART 1: Focus Time Trend (Last 7 Days) */}
-        <div className="md:col-span-6 bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-5 flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80">
+        <div className="md:col-span-6 bg-surface border border-border-subtle rounded-2xl p-5 flex flex-col justify-between">
+          <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
             <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-200 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-cyan-400" /> Focus Time Trend (7
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground flex items-center gap-2">
+                <Clock className="w-4 h-4 text-accent" /> Focus Time Trend (7
                 Days)
               </h3>
-              <p className="text-[11px] text-zinc-500 mt-0.5">
+              <p className="text-[11px] text-muted-foreground mt-0.5">
                 Daily deep work minutes logged by Pomodoro
               </p>
             </div>
             <div className="text-right">
-              <span className="text-xs text-cyan-400 font-bold">
+              <span className="text-xs text-accent font-bold font-mono">
                 {displayedTodayMinutes}m
               </span>
-              <span className="text-[10px] text-zinc-500 block">Today</span>
+              <span className="text-[10px] text-muted-foreground block">Today</span>
             </div>
           </div>
 
@@ -979,22 +979,22 @@ export default function AchievementsView({
                   key={day.date}
                   className="flex-1 flex flex-col items-center gap-2 group relative"
                 >
-                  <div className="absolute -top-9 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-900 border border-zinc-700 text-white text-[10px] px-2 py-0.5 rounded shadow-lg pointer-events-none z-20 whitespace-nowrap">
+                  <div className="absolute -top-9 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-elevated border border-border-subtle text-foreground text-[10px] px-2 py-0.5 rounded shadow-lg pointer-events-none z-20 whitespace-nowrap">
                     {day.focus_minutes} mins ({day.sessions_count} sprints)
                   </div>
 
-                  <div className="w-full bg-zinc-900/60 rounded-t-lg h-32 flex items-end p-1">
+                  <div className="w-full bg-surface-muted rounded-t-lg h-32 flex items-end p-1">
                     <div
                       className={`w-full rounded-md transition-all duration-500 ${
                         day.focus_minutes > 0
                           ? "bg-accent"
-                          : "bg-zinc-800"
+                          : "bg-surface-elevated"
                       }`}
                       style={{ height: `${heightPercent}%` }}
                     />
                   </div>
 
-                  <span className="text-[10px] text-zinc-500">{dayLabel}</span>
+                  <span className="text-[10px] text-muted-foreground">{dayLabel}</span>
                 </div>
               );
             })}
@@ -1002,14 +1002,14 @@ export default function AchievementsView({
         </div>
 
         {/* CHART 2: Symmetrical Platform & Difficulty Breakdown with Dual View */}
-        <div className="md:col-span-6 bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-5 flex flex-col justify-between space-y-4">
+        <div className="md:col-span-6 bg-surface border border-border-subtle rounded-2xl p-5 flex flex-col justify-between space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-200 flex items-center gap-2">
-                <BarChart2 className="w-4 h-4 text-purple-400" /> Platform &
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground flex items-center gap-2">
+                <BarChart2 className="w-4 h-4 text-accent" /> Platform &
                 Difficulty Breakdown
               </h3>
-              <p className="text-[11px] text-zinc-500 mt-0.5">
+              <p className="text-[11px] text-muted-foreground mt-0.5">
                 {breakdownView === "logged"
                   ? "DSA problems logged in your daily arena & timetable"
                   : "Lifetime solved count verified via platform public APIs"}
@@ -1017,14 +1017,14 @@ export default function AchievementsView({
             </div>
 
             {/* View Switcher Pill */}
-            <div className="flex items-center gap-1 bg-zinc-950 p-1 rounded-xl border border-zinc-800 self-start sm:self-auto">
+            <div className="flex items-center gap-1 bg-surface-muted p-1 rounded-xl border border-border-subtle self-start sm:self-auto">
               <button
                 type="button"
                 onClick={() => setBreakdownView("logged")}
-                className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                className={`text-[10px] font-mono font-medium px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                   breakdownView === "logged"
-                    ? "bg-zinc-800 text-purple-300 shadow-sm border border-zinc-700/80"
-                    : "text-zinc-500 hover:text-zinc-300"
+                    ? "bg-surface-elevated text-accent shadow-xs border border-border-subtle"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 App Logs ({loggedTotal})
@@ -1032,10 +1032,10 @@ export default function AchievementsView({
               <button
                 type="button"
                 onClick={() => setBreakdownView("profiles")}
-                className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                className={`text-[10px] font-mono font-medium px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
                   breakdownView === "profiles"
-                    ? "bg-zinc-800 text-cyan-300 shadow-sm border border-zinc-700/80"
-                    : "text-zinc-500 hover:text-zinc-300"
+                    ? "bg-surface-elevated text-accent shadow-xs border border-border-subtle"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Profiles ({profileTotal})
@@ -1049,46 +1049,46 @@ export default function AchievementsView({
               {/* Symmetrical Platform Cards */}
               <div className="grid grid-cols-2 gap-2.5">
                 {/* LeetCode Card */}
-                <div className="p-3 bg-zinc-950 border border-zinc-800/90 rounded-xl space-y-2">
+                <div className="p-3 bg-surface-muted border border-border-subtle rounded-xl space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-amber-500 dark:text-amber-400 font-bold flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400" />{" "}
+                    <span className="text-foreground font-medium flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-accent" />{" "}
                       LeetCode
                     </span>
-                    <span className="text-zinc-200 font-mono font-black text-sm">
+                    <span className="text-foreground font-mono font-bold text-sm">
                       {loggedPlatforms.leetcode.count}
                     </span>
                   </div>
-                  <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-surface h-1.5 rounded-full overflow-hidden border border-border-subtle">
                     <div
-                      className="bg-amber-400 h-full rounded-full transition-all duration-500"
+                      className="bg-accent h-full rounded-full transition-all duration-500"
                       style={{ width: `${loggedPlatforms.leetcode.pct}%` }}
                     />
                   </div>
-                  <div className="flex items-center justify-between text-[10px] text-zinc-500 font-mono">
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
                     <span>{loggedPlatforms.leetcode.pct}% of pool</span>
                     <span>Arena Log</span>
                   </div>
                 </div>
 
                 {/* Codeforces Card */}
-                <div className="p-3 bg-zinc-950 border border-zinc-800/90 rounded-xl space-y-2">
+                <div className="p-3 bg-surface-muted border border-border-subtle rounded-xl space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-blue-500 dark:text-blue-400 font-bold flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400" />{" "}
+                    <span className="text-foreground font-medium flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-accent" />{" "}
                       Codeforces
                     </span>
-                    <span className="text-zinc-200 font-mono font-black text-sm">
+                    <span className="text-foreground font-mono font-bold text-sm">
                       {loggedPlatforms.codeforces.count}
                     </span>
                   </div>
-                  <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-surface h-1.5 rounded-full overflow-hidden border border-border-subtle">
                     <div
-                      className="bg-blue-400 h-full rounded-full transition-all duration-500"
+                      className="bg-accent h-full rounded-full transition-all duration-500"
                       style={{ width: `${loggedPlatforms.codeforces.pct}%` }}
                     />
                   </div>
-                  <div className="flex items-center justify-between text-[10px] text-zinc-500 font-mono">
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
                     <span>{loggedPlatforms.codeforces.pct}% of pool</span>
                     <span>Arena Log</span>
                   </div>
@@ -1096,12 +1096,12 @@ export default function AchievementsView({
               </div>
 
               {/* Difficulty Tiers */}
-              <div className="pt-2 border-t border-zinc-800/80 space-y-2">
+              <div className="pt-2 border-t border-border-subtle space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">
+                  <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
                     Difficulty Tiers (Logged Problems)
                   </span>
-                  <span className="text-[10px] text-zinc-500 font-mono">
+                  <span className="text-[10px] text-muted-foreground font-mono">
                     {loggedDifficulties.reduce((a, c) => a + c.count, 0)}{" "}
                     classified
                   </span>
@@ -1110,7 +1110,7 @@ export default function AchievementsView({
                   {loggedDifficulties.map((d) => (
                     <div
                       key={d.difficulty}
-                      className="p-2.5 rounded-xl bg-zinc-950 border border-zinc-800/90 flex flex-col justify-between"
+                      className="p-2.5 rounded-xl bg-surface-muted border border-border-subtle flex flex-col justify-between"
                     >
                       <span
                         className="font-bold text-[11px] block"
@@ -1119,14 +1119,14 @@ export default function AchievementsView({
                         {d.difficulty}
                       </span>
                       <div className="my-1.5">
-                        <span className="text-base text-zinc-100 font-black font-mono block leading-none">
+                        <span className="text-base text-foreground font-bold font-mono block leading-none">
                           {d.count}
                         </span>
-                        <span className="text-[10px] text-zinc-500 font-mono">
+                        <span className="text-[10px] text-muted-foreground font-mono">
                           {d.pct}%
                         </span>
                       </div>
-                      <div className="w-full bg-zinc-900 h-1 rounded-full overflow-hidden">
+                      <div className="w-full bg-surface h-1 rounded-full overflow-hidden border border-border-subtle">
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{
@@ -1140,9 +1140,9 @@ export default function AchievementsView({
                 </div>
               </div>
 
-              <div className="text-[10px] text-zinc-500 pt-2 border-t border-zinc-800/80 flex items-center justify-between">
+              <div className="text-[10px] text-muted-foreground pt-2 border-t border-border-subtle flex items-center justify-between">
                 <span>Aggregated from timetable & manual arena logs</span>
-                <span className="text-emerald-400 font-mono font-bold">
+                <span className="text-accent font-mono font-medium">
                   {loggedTotal} total logged
                 </span>
               </div>
@@ -1153,25 +1153,25 @@ export default function AchievementsView({
               {/* Symmetrical Profile Cards */}
               <div className="grid grid-cols-2 gap-2.5">
                 {/* LeetCode Profile Card */}
-                <div className="p-3 bg-zinc-950 border border-zinc-800/90 rounded-xl space-y-2">
+                <div className="p-3 bg-surface-muted border border-border-subtle rounded-xl space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-amber-500 dark:text-amber-400 font-bold flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400" />{" "}
+                    <span className="text-foreground font-medium flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-accent" />{" "}
                       LeetCode
                     </span>
-                    <span className="text-zinc-200 font-mono font-black text-sm">
+                    <span className="text-foreground font-mono font-bold text-sm">
                       {lcResult?.total_solved ?? 0}
                     </span>
                   </div>
-                  <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-surface h-1.5 rounded-full overflow-hidden border border-border-subtle">
                     <div
-                      className="bg-amber-400 h-full rounded-full transition-all duration-500"
+                      className="bg-accent h-full rounded-full transition-all duration-500"
                       style={{ width: `${profilePlatforms.leetcode.pct}%` }}
                     />
                   </div>
-                  <div className="flex items-center justify-between text-[10px] text-zinc-500 font-mono">
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
                     <span>{profilePlatforms.leetcode.pct}% of profiles</span>
-                    <span className="text-zinc-400 truncate max-w-[90px]">
+                    <span className="text-muted-foreground truncate max-w-[90px]">
                       {lcResult?.rank ||
                         (lcUsername ? `@${lcUsername}` : "Not synced")}
                     </span>
@@ -1179,25 +1179,25 @@ export default function AchievementsView({
                 </div>
 
                 {/* Codeforces Profile Card */}
-                <div className="p-3 bg-zinc-950 border border-zinc-800/90 rounded-xl space-y-2">
+                <div className="p-3 bg-surface-muted border border-border-subtle rounded-xl space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-blue-500 dark:text-blue-400 font-bold flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400" />{" "}
+                    <span className="text-foreground font-medium flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-accent" />{" "}
                       Codeforces
                     </span>
-                    <span className="text-zinc-200 font-mono font-black text-sm">
+                    <span className="text-foreground font-mono font-bold text-sm">
                       {cfResult?.total_solved ?? 0}
                     </span>
                   </div>
-                  <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-surface h-1.5 rounded-full overflow-hidden border border-border-subtle">
                     <div
-                      className="bg-blue-400 h-full rounded-full transition-all duration-500"
+                      className="bg-accent h-full rounded-full transition-all duration-500"
                       style={{ width: `${profilePlatforms.codeforces.pct}%` }}
                     />
                   </div>
-                  <div className="flex items-center justify-between text-[10px] text-zinc-500 font-mono">
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono">
                     <span>{profilePlatforms.codeforces.pct}% of profiles</span>
-                    <span className="text-zinc-400 truncate max-w-[90px]">
+                    <span className="text-muted-foreground truncate max-w-[90px]">
                       {cfResult?.rating
                         ? `Rating ${cfResult.rating}`
                         : cfHandle
@@ -1209,12 +1209,12 @@ export default function AchievementsView({
               </div>
 
               {/* Profile Difficulty Tiers */}
-              <div className="pt-2 border-t border-zinc-800/80 space-y-2">
+              <div className="pt-2 border-t border-border-subtle space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">
+                  <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
                     Difficulty Tiers (Combined Profiles)
                   </span>
-                  <span className="text-[10px] text-zinc-500 font-mono">
+                  <span className="text-[10px] text-muted-foreground font-mono">
                     {profileDifficulties.reduce((a, c) => a + c.count, 0)} total
                     solved
                   </span>
@@ -1223,7 +1223,7 @@ export default function AchievementsView({
                   {profileDifficulties.map((d) => (
                     <div
                       key={d.difficulty}
-                      className="p-2.5 rounded-xl bg-zinc-950 border border-zinc-800/90 flex flex-col justify-between"
+                      className="p-2.5 rounded-xl bg-surface-muted border border-border-subtle flex flex-col justify-between"
                     >
                       <span
                         className="font-bold text-[11px] block"
@@ -1232,14 +1232,14 @@ export default function AchievementsView({
                         {d.difficulty}
                       </span>
                       <div className="my-1.5">
-                        <span className="text-base text-zinc-100 font-black font-mono block leading-none">
+                        <span className="text-base text-foreground font-bold font-mono block leading-none">
                           {d.count}
                         </span>
-                        <span className="text-[10px] text-zinc-500 font-mono">
+                        <span className="text-[10px] text-muted-foreground font-mono">
                           {d.pct}%
                         </span>
                       </div>
-                      <div className="w-full bg-zinc-900 h-1 rounded-full overflow-hidden">
+                      <div className="w-full bg-surface h-1 rounded-full overflow-hidden border border-border-subtle">
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{
@@ -1253,9 +1253,9 @@ export default function AchievementsView({
                 </div>
               </div>
 
-              <div className="text-[10px] text-zinc-500 pt-2 border-t border-zinc-800/80 flex items-center justify-between">
+              <div className="text-[10px] text-muted-foreground pt-2 border-t border-border-subtle flex items-center justify-between">
                 <span>Verified via LeetCode & Codeforces Public APIs</span>
-                <span className="text-cyan-400 font-mono font-bold">
+                <span className="text-accent font-mono font-medium">
                   {profileTotal} lifetime solved
                 </span>
               </div>
@@ -1268,21 +1268,21 @@ export default function AchievementsView({
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
-              <Award className="w-4 h-4 text-emerald-400" /> Milestones & Badges
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground flex items-center gap-2">
+              <Award className="w-4 h-4 text-accent" /> Milestones & Badges
               ({badges.filter((b) => b.unlocked).length} / {badges.length}{" "}
               Unlocked)
             </h3>
-            <p className="text-[11px] text-zinc-500">
+            <p className="text-[11px] text-muted-foreground">
               Click an unlocked badge to celebrate with sound & confetti! 🎉
             </p>
           </div>
 
           <button
             onClick={() => setShowAllBadgesModal(true)}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-950/60 hover:bg-emerald-900/60 border border-emerald-700/80 text-emerald-300 text-xs font-bold transition cursor-pointer self-start sm:self-auto shadow-sm"
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface hover:bg-surface-elevated border border-border-subtle text-foreground text-xs font-medium transition cursor-pointer self-start sm:self-auto shadow-xs"
           >
-            <Trophy className="w-3.5 h-3.5 text-amber-400" />
+            <Trophy className="w-3.5 h-3.5 text-accent" />
             <span>View All Badges ({badges.length})</span>
           </button>
         </div>
@@ -1296,15 +1296,15 @@ export default function AchievementsView({
                 onClick={() => b.unlocked && triggerBadgeCelebration(b)}
                 className={`p-4 rounded-2xl border flex items-start gap-3.5 transition-all ${
                   b.unlocked
-                    ? "bg-zinc-900/70 hover:bg-zinc-900 border-zinc-700 shadow-sm cursor-pointer hover:border-emerald-500/70 hover:scale-[1.01]"
-                    : "bg-zinc-950/40 border-zinc-800/40 opacity-45 grayscale cursor-not-allowed"
+                    ? "bg-surface hover:bg-surface-elevated border-border-subtle shadow-xs cursor-pointer hover:border-accent/70 hover:scale-[1.01]"
+                    : "bg-surface-muted border-border-subtle/60 opacity-45 grayscale cursor-not-allowed"
                 }`}
               >
                 <div
                   className={`p-2.5 rounded-xl border shrink-0 ${
                     b.unlocked
-                      ? "bg-emerald-950/70 border-emerald-700 text-emerald-400 shadow-xs"
-                      : "bg-zinc-900 border-zinc-800 text-zinc-600"
+                      ? "bg-accent-subtle border-accent-border text-accent"
+                      : "bg-surface-muted border-border-subtle text-muted-foreground"
                   }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -1312,25 +1312,25 @@ export default function AchievementsView({
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <h4 className="text-xs font-bold text-zinc-200 truncate">
+                    <h4 className="text-xs font-semibold text-foreground truncate">
                       {b.title}
                     </h4>
-                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-zinc-800 border border-zinc-700 text-zinc-400">
+                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-surface-muted border border-border-subtle text-muted-foreground">
                       {b.tier}
                     </span>
                   </div>
-                  <p className="text-[11px] text-zinc-400 mt-1 leading-snug">
+                  <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
                     {b.desc}
                   </p>
-                  <div className="flex items-center justify-between mt-2 pt-1 border-t border-zinc-800/50">
+                  <div className="flex items-center justify-between mt-2 pt-1 border-t border-border-subtle">
                     <span
                       className={`text-[10px] font-bold ${
-                        b.unlocked ? "text-emerald-400" : "text-zinc-600"
+                        b.unlocked ? "text-accent" : "text-muted-foreground"
                       }`}
                     >
                       {b.unlocked ? "✓ UNLOCKED • CELEBRATE" : "LOCKED"}
                     </span>
-                    <span className="text-[9px] text-zinc-500 uppercase">
+                    <span className="text-[9px] text-muted-foreground uppercase">
                       {b.category}
                     </span>
                   </div>
@@ -1343,18 +1343,18 @@ export default function AchievementsView({
 
       {/* BADGE CELEBRATION MODAL */}
       {celebratingBadge && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in">
-          <div className="bg-zinc-950 border border-zinc-800 w-full max-w-md rounded-3xl p-6 text-center space-y-4 shadow-2xl relative overflow-hidden">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="bg-surface border border-border-subtle w-full max-w-md rounded-3xl p-6 text-center space-y-4 shadow-xl relative overflow-hidden font-mono">
             <button
               onClick={() => setCelebratingBadge(null)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-white p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 transition cursor-pointer"
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground p-1.5 rounded-lg bg-surface-muted hover:bg-surface-elevated border border-border-subtle transition cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
 
             {/* Emblem */}
             <div className="mx-auto w-20 h-20 rounded-3xl bg-accent p-0.5 shadow-md">
-              <div className="w-full h-full bg-zinc-950 rounded-[22px] flex items-center justify-center text-accent">
+              <div className="w-full h-full bg-surface rounded-[22px] flex items-center justify-center text-accent">
                 {(() => {
                   const Icon = celebratingBadge.icon;
                   return <Icon className="w-10 h-10" />;
@@ -1363,16 +1363,16 @@ export default function AchievementsView({
             </div>
 
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-widest text-accent bg-accent-subtle border border-accent px-3 py-1 rounded-full inline-block mb-1.5">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-accent bg-accent-subtle border border-accent/40 px-3 py-1 rounded-full inline-block mb-1.5">
                 {celebratingBadge.tier} Tier Milestone
               </span>
-              <h3 className="text-xl font-bold text-white">
+              <h3 className="text-xl font-bold text-foreground">
                 {celebratingBadge.title}
               </h3>
-              <p className="text-xs text-zinc-300 mt-2">
+              <p className="text-xs text-muted-foreground mt-2">
                 {celebratingBadge.desc}
               </p>
-              <p className="text-[11px] text-zinc-500 italic mt-2 bg-zinc-900/50 p-2.5 rounded-xl border border-zinc-800/80">
+              <p className="text-[11px] text-muted-foreground italic mt-2 bg-surface-muted p-2.5 rounded-xl border border-border-subtle">
                 &ldquo;{celebratingBadge.lore}&rdquo;
               </p>
             </div>
@@ -1387,13 +1387,13 @@ export default function AchievementsView({
                     origin: { y: 0.5 },
                   });
                 }}
-                className="flex-1 py-2.5 px-4 rounded-xl bg-accent hover:opacity-90 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                className="flex-1 py-2.5 px-4 rounded-xl bg-accent hover:bg-accent-hover text-accent-foreground font-medium text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <Sparkles className="w-4 h-4" /> Celebrate Again
               </button>
               <button
                 onClick={() => setCelebratingBadge(null)}
-                className="py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs transition cursor-pointer"
+                className="py-2.5 px-4 rounded-xl bg-surface-muted hover:bg-surface-elevated text-foreground border border-border-subtle text-xs transition cursor-pointer"
               >
                 Done
               </button>
@@ -1404,19 +1404,19 @@ export default function AchievementsView({
 
       {/* VIEW ALL BADGES & ACHIEVEMENTS MODAL */}
       {showAllBadgesModal && (
-        <div className="fixed inset-0 z-[105] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in">
-          <div className="bg-zinc-950 border border-zinc-800 w-full max-w-4xl max-h-[90vh] rounded-3xl p-5 sm:p-6 flex flex-col shadow-2xl relative overflow-hidden font-mono">
+        <div className="fixed inset-0 z-[105] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="bg-surface border border-border-subtle w-full max-w-4xl max-h-[90vh] rounded-3xl p-5 sm:p-6 flex flex-col shadow-xl relative overflow-hidden font-mono">
             {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
+            <div className="flex items-center justify-between pb-4 border-b border-border-subtle">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-emerald-950/60 border border-emerald-800 text-emerald-400 rounded-2xl">
+                <div className="p-2.5 bg-accent-subtle border border-accent/30 text-accent rounded-2xl">
                   <Trophy className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white">
+                  <h3 className="text-base font-bold text-foreground">
                     Hall of Achievements & Badges
                   </h3>
-                  <p className="text-xs text-zinc-400">
+                  <p className="text-xs text-muted-foreground">
                     {badges.filter((b) => b.unlocked).length} of {badges.length}{" "}
                     unlocked (
                     {Math.round(
@@ -1430,7 +1430,7 @@ export default function AchievementsView({
               </div>
               <button
                 onClick={() => setShowAllBadgesModal(false)}
-                className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white transition cursor-pointer"
+                className="p-2 rounded-xl bg-surface-muted hover:bg-surface-elevated text-muted-foreground hover:text-foreground border border-border-subtle transition cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1440,26 +1440,26 @@ export default function AchievementsView({
             <div className="pt-4 pb-2 space-y-3">
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1">
-                  <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     placeholder="Search badge name, lore, or tier..."
                     value={badgeSearchQuery}
                     onChange={(e) => setBadgeSearchQuery(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-xs text-zinc-200 outline-none focus:border-emerald-500"
+                    className="w-full bg-surface-muted border border-border-subtle rounded-xl pl-9 pr-3 py-2 text-xs text-foreground placeholder:text-muted-foreground outline-none focus:border-accent"
                   />
                 </div>
 
                 {/* Status Toggle */}
-                <div className="flex items-center bg-zinc-900 p-1 rounded-xl border border-zinc-800 self-start sm:self-auto">
+                <div className="flex items-center bg-surface-muted p-1 rounded-xl border border-border-subtle self-start sm:self-auto">
                   {(["all", "unlocked", "locked"] as const).map((s) => (
                     <button
                       key={s}
                       onClick={() => setBadgeStatusFilter(s)}
                       className={`px-3 py-1 rounded-lg text-xs capitalize transition cursor-pointer ${
                         badgeStatusFilter === s
-                          ? "bg-zinc-800 text-emerald-400 font-bold border border-zinc-700"
-                          : "text-zinc-500 hover:text-zinc-300"
+                          ? "bg-surface-elevated text-accent font-medium border border-border-subtle shadow-xs"
+                          : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       {s}
@@ -1476,8 +1476,8 @@ export default function AchievementsView({
                     onClick={() => setBadgeCategoryFilter(cat)}
                     className={`px-3 py-1 rounded-lg text-xs transition cursor-pointer whitespace-nowrap ${
                       badgeCategoryFilter === cat
-                        ? "bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold"
-                        : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-zinc-200"
+                        ? "bg-accent-subtle text-accent border border-accent/40 font-medium"
+                        : "bg-surface text-muted-foreground border border-border-subtle hover:text-foreground"
                     }`}
                   >
                     {cat}
@@ -1487,9 +1487,9 @@ export default function AchievementsView({
             </div>
 
             {/* Badges Grid Scroll Area */}
-            <div className="flex-1 overflow-y-auto pt-4 pr-1 space-y-3 scrollbar-thin scrollbar-thumb-zinc-800 max-h-[55vh]">
+            <div className="flex-1 overflow-y-auto pt-4 pr-1 space-y-3 scrollbar-thin scrollbar-thumb-border-subtle max-h-[55vh]">
               {filteredBadges.length === 0 ? (
-                <div className="text-center py-12 text-zinc-500 text-xs">
+                <div className="text-center py-12 text-muted-foreground text-xs">
                   No badges found matching your search.
                 </div>
               ) : (
@@ -1506,45 +1506,45 @@ export default function AchievementsView({
                         }}
                         className={`p-4 rounded-2xl border flex items-start gap-3 transition-all ${
                           b.unlocked
-                            ? "bg-zinc-900/80 hover:bg-zinc-900 border-zinc-700 cursor-pointer hover:border-emerald-500 hover:scale-[1.01]"
-                            : "bg-zinc-950 border-zinc-900 opacity-40 grayscale cursor-not-allowed"
+                            ? "bg-surface hover:bg-surface-elevated border-border-subtle cursor-pointer hover:border-accent/70 hover:scale-[1.01]"
+                            : "bg-surface-muted border-border-subtle opacity-40 grayscale cursor-not-allowed"
                         }`}
                       >
                         <div
                           className={`p-2.5 rounded-xl border shrink-0 ${
                             b.unlocked
-                              ? "bg-emerald-950 border-emerald-700 text-emerald-400 shadow-xs"
-                              : "bg-zinc-900 border-zinc-800 text-zinc-600"
+                              ? "bg-accent-subtle border-accent-border text-accent"
+                              : "bg-surface-muted border-border-subtle text-muted-foreground"
                           }`}
                         >
                           <Icon className="w-5 h-5" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
-                            <h4 className="text-xs font-bold text-zinc-200 truncate">
+                            <h4 className="text-xs font-semibold text-foreground truncate">
                               {b.title}
                             </h4>
-                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-zinc-800 border border-zinc-700 text-zinc-400">
+                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-surface-muted border border-border-subtle text-muted-foreground">
                               {b.tier}
                             </span>
                           </div>
-                          <p className="text-[11px] text-zinc-400 mt-1 leading-snug">
+                          <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
                             {b.desc}
                           </p>
-                          <p className="text-[10px] text-zinc-500 italic mt-1.5 bg-zinc-950/80 p-1.5 rounded-lg border border-zinc-900">
+                          <p className="text-[10px] text-muted-foreground italic mt-1.5 bg-surface-muted/80 p-1.5 rounded-lg border border-border-subtle">
                             &ldquo;{b.lore}&rdquo;
                           </p>
-                          <div className="flex items-center justify-between mt-2 pt-1 border-t border-zinc-800/60">
+                          <div className="flex items-center justify-between mt-2 pt-1 border-t border-border-subtle">
                             <span
                               className={`text-[10px] font-bold ${
                                 b.unlocked
-                                  ? "text-emerald-400"
-                                  : "text-zinc-600"
+                                  ? "text-accent"
+                                  : "text-muted-foreground"
                               }`}
                             >
                               {b.unlocked ? "✓ UNLOCKED • CELEBRATE" : "LOCKED"}
                             </span>
-                            <span className="text-[9px] text-zinc-500 uppercase">
+                            <span className="text-[9px] text-muted-foreground uppercase">
                               {b.category}
                             </span>
                           </div>

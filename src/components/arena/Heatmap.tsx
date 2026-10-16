@@ -86,26 +86,26 @@ export default function Heatmap({ data, onSelectDate }: HeatmapProps) {
 
   const getColor = (count: number) => {
     if (count === 0)
-      return "bg-zinc-900 border-zinc-800/80 hover:border-zinc-500";
+      return "bg-surface-muted border-border-subtle hover:border-border-strong";
     if (count === 1)
-      return "bg-emerald-950 border-emerald-800 text-emerald-300 hover:brightness-125";
+      return "bg-accent/30 border-accent/40 text-foreground hover:brightness-125";
     if (count <= 3)
-      return "bg-emerald-700 border-emerald-600 text-emerald-100 hover:brightness-125";
-    return "bg-emerald-400 border-emerald-300 text-black shadow-[0_0_10px_rgba(52,211,153,0.5)]";
+      return "bg-accent/65 border-accent/70 text-foreground hover:brightness-125";
+    return "bg-accent border-accent text-accent-foreground font-medium hover:brightness-110";
   };
 
   return (
-    <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-5 backdrop-blur-sm relative font-mono">
+    <div className="bg-surface border border-border-subtle rounded-2xl p-5 relative font-mono">
       {/* Header with View Mode Switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold text-zinc-200">
+            <h3 className="text-sm font-semibold text-foreground">
               {viewMode === "matrix"
                 ? "Execution Matrix"
                 : "Problem Velocity Chart"}
             </h3>
-            <span className="text-[10px] text-emerald-400 bg-emerald-950/60 border border-emerald-800/80 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] text-accent bg-accent-subtle border border-accent/30 px-2 py-0.5 rounded-full font-medium">
               {viewMode === "matrix"
                 ? timeframe === "16w"
                   ? "16-Week Ledger"
@@ -115,9 +115,9 @@ export default function Heatmap({ data, onSelectDate }: HeatmapProps) {
                 : "14-Day Velocity"}
             </span>
           </div>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             {hoveredDay ? (
-              <span className="text-emerald-400 font-medium">
+              <span className="text-accent font-medium">
                 {hoveredDay.date}: {hoveredDay.count} problem
                 {hoveredDay.count !== 1 ? "s" : ""} solved
               </span>
@@ -138,14 +138,14 @@ export default function Heatmap({ data, onSelectDate }: HeatmapProps) {
         <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
           {/* Timeframe Range Selector (Matrix Mode) */}
           {viewMode === "matrix" && (
-            <div className="flex items-center bg-zinc-950 p-1 rounded-xl border border-zinc-800 text-[11px]">
+            <div className="flex items-center bg-surface-muted p-1 rounded-xl border border-border-subtle text-[11px]">
               <button
                 type="button"
                 onClick={() => setTimeframe("16w")}
                 className={`px-2 py-0.5 rounded-lg transition cursor-pointer ${
                   timeframe === "16w"
-                    ? "bg-zinc-800 text-emerald-400 font-bold shadow-sm"
-                    : "text-zinc-500 hover:text-zinc-300"
+                    ? "bg-surface-elevated text-accent font-medium border border-border-subtle shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
                 title="16 Weeks (~4 Months)"
               >
@@ -156,8 +156,8 @@ export default function Heatmap({ data, onSelectDate }: HeatmapProps) {
                 onClick={() => setTimeframe("26w")}
                 className={`px-2 py-0.5 rounded-lg transition cursor-pointer ${
                   timeframe === "26w"
-                    ? "bg-zinc-800 text-emerald-400 font-bold shadow-sm"
-                    : "text-zinc-500 hover:text-zinc-300"
+                    ? "bg-surface-elevated text-accent font-medium border border-border-subtle shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
                 title="26 Weeks (6 Months)"
               >
@@ -168,8 +168,8 @@ export default function Heatmap({ data, onSelectDate }: HeatmapProps) {
                 onClick={() => setTimeframe("52w")}
                 className={`px-2 py-0.5 rounded-lg transition cursor-pointer ${
                   timeframe === "52w"
-                    ? "bg-zinc-800 text-emerald-400 font-bold shadow-sm"
-                    : "text-zinc-500 hover:text-zinc-300"
+                    ? "bg-surface-elevated text-accent font-medium border border-border-subtle shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
                 title="52 Weeks (1 Full Year)"
               >
@@ -179,13 +179,13 @@ export default function Heatmap({ data, onSelectDate }: HeatmapProps) {
           )}
 
           {/* View Mode Toggle Buttons */}
-          <div className="flex items-center bg-zinc-950 p-1 rounded-xl border border-zinc-800 text-xs">
+          <div className="flex items-center bg-surface-muted p-1 rounded-xl border border-border-subtle text-xs">
             <button
               onClick={() => setViewMode("matrix")}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition cursor-pointer ${
                 viewMode === "matrix"
-                  ? "bg-zinc-800 text-emerald-400 font-bold shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-surface-elevated text-accent font-medium border border-border-subtle shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
               title="Matrix View"
             >
@@ -196,8 +196,8 @@ export default function Heatmap({ data, onSelectDate }: HeatmapProps) {
               onClick={() => setViewMode("chart")}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition cursor-pointer ${
                 viewMode === "chart"
-                  ? "bg-zinc-800 text-emerald-400 font-bold shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-surface-elevated text-accent font-medium border border-border-subtle shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
               title="Velocity Chart View"
             >
@@ -206,11 +206,11 @@ export default function Heatmap({ data, onSelectDate }: HeatmapProps) {
             </button>
           </div>
 
-          <div className="flex items-baseline gap-1.5 pl-2 border-l border-zinc-800">
-            <span className="text-2xl font-black text-emerald-400">
+          <div className="flex items-baseline gap-1.5 pl-2 border-l border-border-subtle">
+            <span className="text-2xl font-bold text-foreground">
               {totalSolved}
             </span>
-            <span className="text-xs text-zinc-500">solved</span>
+            <span className="text-xs text-muted-foreground">solved</span>
           </div>
         </div>
       </div>
@@ -218,7 +218,7 @@ export default function Heatmap({ data, onSelectDate }: HeatmapProps) {
       {/* VIEW 1: MATRIX VIEW */}
       {viewMode === "matrix" && (
         <>
-          <div className="overflow-x-auto px-2 py-2 -mx-2 scrollbar-thin scrollbar-thumb-zinc-800">
+          <div className="overflow-x-auto px-2 py-2 -mx-2 scrollbar-thin scrollbar-thumb-border-subtle">
             <div className="grid grid-flow-col grid-rows-7 gap-1.5 min-w-max pr-3 py-1">
               {mounted &&
                 days.map((d) => (
@@ -238,7 +238,7 @@ export default function Heatmap({ data, onSelectDate }: HeatmapProps) {
             </div>
           </div>
 
-          <div className="flex items-center justify-between mt-3 text-[11px] text-zinc-500">
+          <div className="flex items-center justify-between mt-3 text-[11px] text-muted-foreground">
             <span>
               {timeframe === "16w"
                 ? "16 weeks ago"
@@ -248,10 +248,10 @@ export default function Heatmap({ data, onSelectDate }: HeatmapProps) {
             </span>
             <div className="flex items-center gap-1.5">
               <span>Less</span>
-              <div className="w-2.5 h-2.5 rounded-sm bg-zinc-900 border border-zinc-800" />
-              <div className="w-2.5 h-2.5 rounded-sm bg-emerald-950 border border-emerald-800" />
-              <div className="w-2.5 h-2.5 rounded-sm bg-emerald-700" />
-              <div className="w-2.5 h-2.5 rounded-sm bg-emerald-400" />
+              <div className="w-2.5 h-2.5 rounded-sm bg-surface-muted border border-border-subtle" />
+              <div className="w-2.5 h-2.5 rounded-sm bg-accent/30 border border-accent/40" />
+              <div className="w-2.5 h-2.5 rounded-sm bg-accent/65 border border-accent/70" />
+              <div className="w-2.5 h-2.5 rounded-sm bg-accent" />
               <span>More</span>
             </div>
             <span>Today</span>
@@ -264,27 +264,27 @@ export default function Heatmap({ data, onSelectDate }: HeatmapProps) {
         <div className="space-y-4 pt-1">
           {/* Quick Velocity KPI Pills */}
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-zinc-950/60 border border-zinc-800 p-2.5 rounded-xl">
-              <span className="text-[10px] text-zinc-500 block">
+            <div className="bg-surface-muted border border-border-subtle p-2.5 rounded-xl">
+              <span className="text-[10px] text-muted-foreground block">
                 14-Day Solves
               </span>
-              <span className="text-lg font-black text-emerald-400">
+              <span className="text-lg font-bold text-foreground">
                 {last14Total}
               </span>
             </div>
-            <div className="bg-zinc-950/60 border border-zinc-800 p-2.5 rounded-xl">
-              <span className="text-[10px] text-zinc-500 block">
+            <div className="bg-surface-muted border border-border-subtle p-2.5 rounded-xl">
+              <span className="text-[10px] text-muted-foreground block">
                 Active Days
               </span>
-              <span className="text-lg font-black text-cyan-400">
+              <span className="text-lg font-bold text-accent">
                 {last14Days.filter((d) => d.count > 0).length}/14
               </span>
             </div>
-            <div className="bg-zinc-950/60 border border-zinc-800 p-2.5 rounded-xl">
-              <span className="text-[10px] text-zinc-500 block">
+            <div className="bg-surface-muted border border-border-subtle p-2.5 rounded-xl">
+              <span className="text-[10px] text-muted-foreground block">
                 Peak Solves / Day
               </span>
-              <span className="text-lg font-black text-purple-400">
+              <span className="text-lg font-bold text-foreground">
                 {Math.max(...last14Days.map((d) => d.count), 0)}
               </span>
             </div>
@@ -305,20 +305,20 @@ export default function Heatmap({ data, onSelectDate }: HeatmapProps) {
                   onMouseLeave={() => setHoveredDay(null)}
                   onClick={() => onSelectDate && onSelectDate(d.date, d.count)}
                 >
-                  <span className="text-[10px] text-zinc-400 font-bold mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-[10px] text-muted-foreground font-medium mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     {d.count > 0 ? d.count : ""}
                   </span>
-                  <div className="w-full max-w-[24px] bg-zinc-950 rounded-t-lg overflow-hidden h-32 flex items-end">
+                  <div className="w-full max-w-[24px] bg-surface-muted rounded-t-lg overflow-hidden h-32 flex items-end">
                     <div
                       className={`w-full rounded-t-lg transition-all duration-500 ${
                         d.count > 0
-                          ? "bg-gradient-to-t from-emerald-600 to-emerald-400 group-hover:brightness-125 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
-                          : "bg-zinc-800/40"
+                          ? "bg-accent group-hover:opacity-90 shadow-xs"
+                          : "bg-surface-elevated"
                       }`}
                       style={{ height: `${heightPct}%` }}
                     />
                   </div>
-                  <span className="text-[9px] text-zinc-500 mt-2 truncate max-w-[32px]">
+                  <span className="text-[9px] text-muted-foreground mt-2 truncate max-w-[32px]">
                     {d.shortDate}
                   </span>
                 </div>
@@ -326,9 +326,9 @@ export default function Heatmap({ data, onSelectDate }: HeatmapProps) {
             })}
           </div>
 
-          <div className="text-[11px] text-zinc-500 flex items-center justify-between pt-2 border-t border-zinc-800">
+          <div className="text-[11px] text-muted-foreground flex items-center justify-between pt-2 border-t border-border-subtle">
             <span>Hover on bars for problem breakdown</span>
-            <span className="text-emerald-400 flex items-center gap-1 font-bold">
+            <span className="text-accent flex items-center gap-1 font-medium">
               <TrendingUp className="w-3.5 h-3.5" /> High execution momentum
             </span>
           </div>
